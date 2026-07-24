@@ -58,6 +58,7 @@ func main() {
 		fmt.Printf("   %s-js%s        : Download and scan .js files for leaked AWS Keys, Stripe Tokens, and API secrets\n", core.Coral, core.EndC)
 		fmt.Printf("   %s-tech%s      : Read headers/cookies to detect Technology Stack (e.g. Nginx, PHP, React)\n", core.Coral, core.EndC)
 		fmt.Printf("   %s-vuln%s      : Probe every subdomain for low-hanging bugs (e.g. /.env, /.git/config)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-cve%s       : Match detected technologies against public CVE databases\n", core.Coral, core.EndC)
 		fmt.Printf("   %s-notify%s    : Discord webhook URL to send alerts when a brand new subdomain is found\n", core.Coral, core.EndC)
 		
 		fmt.Printf("\n %s[INVINCIBLE OFFENSIVE FLAGS]%s\n", core.Gold, core.EndC)
@@ -71,6 +72,10 @@ func main() {
 		fmt.Printf("   %s-fuzz%s      : High-speed directory brute-forcing for top 40 critical paths (/admin, /api)\n", core.Coral, core.EndC)
 		fmt.Printf("   %s-blh%s       : Scan HTML for dead social media links (Broken Link Hijacking)\n", core.Coral, core.EndC)
 		fmt.Printf("   %s-emails%s    : Scrape HTML body to extract exposed employee emails (OSINT/Phishing)\n", core.Coral, core.EndC)
+
+		fmt.Printf("\n %s[CYBER-WARFARE FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-jslinks%s   : Download JS files and extract hidden API endpoints (LinkFinder)\n", core.Sky, core.EndC)
+		fmt.Printf("   %s-anon%s      : Check open ports (21 FTP, 6379 Redis) for Anonymous/Blank logins\n", core.Sky, core.EndC)
 		
 		fmt.Printf("\n %s[OUTPUT FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-o%s         : Output file to save results (e.g. results.txt)\n", core.Mint, core.EndC)
@@ -119,6 +124,10 @@ func main() {
 	fuzzPtr := flag.Bool("fuzz", false, "FUZZ CRITICAL DIRECTORIES")
 	blhPtr := flag.Bool("blh", false, "DETECT BROKEN LINK HIJACKING")
 	emailsPtr := flag.Bool("emails", false, "EXTRACT EXPOSED EMAILS")
+	
+	jslinksPtr := flag.Bool("jslinks", false, "EXTRACT API ENDPOINTS FROM JS")
+	anonPtr := flag.Bool("anon", false, "CHECK ANONYMOUS DB LOGINS")
+	cvePtr := flag.Bool("cve", false, "SCAN DETECTED TECH FOR CVES")
 	
 	flag.Parse()
 
@@ -243,7 +252,7 @@ func main() {
 		subdomains = uniqueSubdomains
 
 		// Verify Live Status or Wildcard Filter
-		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr || *jsPtr || *techPtr || *vulnPtr || *corsPtr || *wafPtr || *paramsPtr || *screenPtr || *graphqlPtr || *fuzzPtr || *blhPtr || *emailsPtr {
+		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr || *jsPtr || *techPtr || *vulnPtr || *corsPtr || *wafPtr || *paramsPtr || *screenPtr || *graphqlPtr || *fuzzPtr || *blhPtr || *emailsPtr || *jslinksPtr || *anonPtr || *cvePtr {
 			if !*silentPtr {
 				fmt.Printf(" %s[*] VERIFYING LIVE STATUS & FILTERING...%s\n", core.Gold, core.EndC)
 			}
@@ -375,6 +384,27 @@ func main() {
 		portResults = core.ScanPorts(finalSubdomains, *portsPtr, *silentPtr)
 	}
 
+	// Cyber-Warfare Features
+	var jslinkResults map[string][]string
+	if *jslinksPtr && len(finalSubdomains) > 0 {
+		jslinkResults = core.ExtractJSLinks(finalSubdomains, *silentPtr)
+	}
+
+	var anonResults map[string][]string
+	if *anonPtr && len(portResults) > 0 {
+		anonResults = core.CheckAnonymousLogin(portResults, *silentPtr)
+	}
+
+	var cveResults map[string][]string
+	if *cvePtr && len(techResults) > 0 {
+		cveResults = core.CheckCVE(techResults, *silentPtr)
+	}
+
+	// Generate Desktop Screenshot Gallery
+	if *screenPtr && len(finalSubdomains) > 0 {
+		core.GenerateDesktopGallery(target, screenResults, takeoverResults, probeResults, vulnResults, corsResults, wafResults, paramResults, *silentPtr)
+	}
+
 	// Generate HTML Report
 	if *htmlPtr {
 		htmlName := "twhunt_report.html"
@@ -402,6 +432,9 @@ func main() {
 			Fuzz       map[string][]string          `json:"fuzz_dirs,omitempty"`
 			BLH        map[string][]string          `json:"blh,omitempty"`
 			Emails     map[string][]string          `json:"emails,omitempty"`
+			JSLinks    map[string][]string          `json:"js_links,omitempty"`
+			Anon       map[string][]string          `json:"anon_logins,omitempty"`
+			CVEs       map[string][]string          `json:"cves,omitempty"`
 			Wayback    []string                     `json:"wayback_urls,omitempty"`
 		}
 		outData := OutputData{
@@ -420,6 +453,9 @@ func main() {
 			Fuzz:       fuzzResults,
 			BLH:        blhResults,
 			Emails:     emailResults,
+			JSLinks:    jslinkResults,
+			Anon:       anonResults,
+			CVEs:       cveResults,
 			Wayback:    allWaybackURLs,
 		}
 		jsonData, _ := json.MarshalIndent(outData, "", "  ")
@@ -495,6 +531,16 @@ func main() {
 			if e, ok := emailResults[sub]; ok && len(e) > 0 {
 				line += fmt.Sprintf("\n    %s↳ [EMAILS] %s%s", core.Sky, strings.Join(e, ", "), core.EndC)
 			}
+			
+			if js, ok := jslinkResults[sub]; ok && len(js) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [JS ENDPOINTS] %s%s", core.Gold, strings.Join(js, ", "), core.EndC)
+			}
+			if a, ok := anonResults[sub]; ok && len(a) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [ANON LOGIN] %s%s", core.Coral, strings.Join(a, ", "), core.EndC)
+			}
+			if c, ok := cveResults[sub]; ok && len(c) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [CVEs] %s%s", core.Coral, strings.Join(c, ", "), core.EndC)
+			}
 
 			fmt.Println(line)
 		}
@@ -517,7 +563,7 @@ func main() {
 
 	// Text Save Logic
 	if *outputPtr != "" && len(finalSubdomains) > 0 && !*htmlPtr {
-		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, screenResults, graphqlResults, fuzzResults, blhResults, emailResults, allWaybackURLs, *jsonPtr, *silentPtr)
+		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, screenResults, graphqlResults, fuzzResults, blhResults, emailResults, jslinkResults, anonResults, cveResults, allWaybackURLs, *jsonPtr, *silentPtr)
 	} else if len(finalSubdomains) > 0 && !*silentPtr && !*jsonPtr && !*htmlPtr {
 		fmt.Printf("\n %s[?] Do you want to save the results to a file? (y/n): %s", core.Gold, core.EndC)
 		var choice string
@@ -531,13 +577,13 @@ func main() {
 			filename = strings.TrimSpace(filename)
 			
 			if filename != "" {
-				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, screenResults, graphqlResults, fuzzResults, blhResults, emailResults, allWaybackURLs, false, *silentPtr)
+				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, screenResults, graphqlResults, fuzzResults, blhResults, emailResults, jslinkResults, anonResults, cveResults, allWaybackURLs, false, *silentPtr)
 			}
 		}
 	}
 }
 
-func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, screenResults map[string]string, graphqlResults map[string]string, fuzzResults map[string][]string, blhResults map[string][]string, emailResults map[string][]string, wayback []string, isJson bool, isSilent bool) {
+func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, screenResults map[string]string, graphqlResults map[string]string, fuzzResults map[string][]string, blhResults map[string][]string, emailResults map[string][]string, jslinkResults map[string][]string, anonResults map[string][]string, cveResults map[string][]string, wayback []string, isJson bool, isSilent bool) {
 	file, err := os.Create(filename)
 	if err != nil {
 		if !isSilent {
@@ -594,6 +640,15 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 		}
 		if e, ok := emailResults[sub]; ok && len(e) > 0 {
 			line += " [EMAILS: " + strings.Join(e, ", ") + "]"
+		}
+		if js, ok := jslinkResults[sub]; ok && len(js) > 0 {
+			line += " [JSLINKS: " + strings.Join(js, ", ") + "]"
+		}
+		if a, ok := anonResults[sub]; ok && len(a) > 0 {
+			line += " [ANON: " + strings.Join(a, ", ") + "]"
+		}
+		if c, ok := cveResults[sub]; ok && len(c) > 0 {
+			line += " [CVEs: " + strings.Join(c, ", ") + "]"
 		}
 		file.WriteString(line + "\n")
 	}
