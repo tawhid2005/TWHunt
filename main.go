@@ -19,10 +19,17 @@ func main() {
 
 	if *domainPtr == "" {
 		fmt.Printf("%s%s\n", core.Sky, core.Bold)
-		fmt.Println("░█▀▀░█▀▀░█▀▄░▀█▀░█░█░█░█░█▀█░▀█▀")
-		fmt.Println("░█░░░█▀▀░█▀▄░░█░░█▀█░█░█░█░█░░█░")
-		fmt.Println("░▀▀▀░▀▀▀░▀░▀░░▀░░▀░▀░▀▀▀░▀░▀░░▀░")
-		fmt.Printf("\n%s         USAGE: go run main.go -d <domain>%s\n", core.Gold, core.EndC)
+		fmt.Println(`
+  _______          __  _    _             _   
+ |__   __|        / / | |  | |           | |  
+    | | __      __ /  | |__| | _   _  _ __ | |_ 
+    | | \ \ /\ / /    |  __  || | | || '_ \| __|
+    | |  \ V  V /     | |  | || |_| || | | | |_ 
+    |_|   \_/\_/      |_|  |_| \__,_||_| |_|\__|
+                                                  `)
+		fmt.Printf("%s   An Advanced & Professional Subdomain Hunter%s\n", core.Lavender, core.EndC)
+		fmt.Printf("%s   Created by: %sMD TALHA HUSSAIN TAWHID%s\n", core.Slate, core.Mint, core.EndC)
+		fmt.Printf("\n%s   [USAGE]%s ./twhunt -d <domain> [-v]%s\n\n", core.Gold, core.Silver, core.EndC)
 		os.Exit(1)
 	}
 
