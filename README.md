@@ -1,54 +1,79 @@
 # TWHunt 🚀
 
-TWHunt is a blazingly fast, concurrent, and modular passive subdomain enumeration tool written in Go. It integrates **24 highly reliable, completely FREE APIs** without requiring any API keys. 
+**TWHunt** is an advanced, blazingly fast, and modular passive subdomain enumeration tool written in Go. It integrates **24 highly reliable, completely FREE APIs** without requiring any API keys. 
 
-Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains in just a few seconds and provides a beautiful, animated terminal output.
+Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains in just a few seconds and provides a beautiful, colorful, and animated terminal output.
 
 ## Features ✨
 
 - **24 Built-in Free Sources**: Uses Regex & JSON scraping engines to fetch data from crt.sh, HackerTarget, URLScan, RapidDNS, ShodanCT, ThreatCrowd, and many more!
 - **Extremely Fast**: Uses Go routines (`goroutines`) and channels for concurrent fetching.
-- **Zero Configuration**: No API keys required. Plug and play!
-- **Live Host Verification**: Optionally resolve DNS to verify which subdomains are alive.
+- **Zero Configuration**: No API keys required. Just plug and play!
+- **Live Host Verification**: Optionally resolve DNS to verify which subdomains are actively alive.
 - **Beautiful UI**: Colorful ASCII banners, live spinner animations, and clean summary tables.
-- **Cross-Platform**: Works natively on Linux, Windows, and macOS.
+- **Cross-Platform**: Works natively on Linux (Kali/Parrot), Windows, and macOS.
 
-## Installation 🛠️
+## 🛠️ Installation on Kali Linux
 
-Ensure you have [Go](https://golang.org/doc/install) installed on your system.
+You can easily install and run **TWHunt** on Kali Linux using one of the following methods:
 
-### Install from Source
+### Method 1: Download the Pre-compiled Binary (Easiest)
+If you don't want to install Go, you can just download the pre-compiled Linux binary.
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/TWHunt.git
+# 1. Download the Linux binary
+wget https://github.com/tawhid2005/TWHunt/raw/master/twhunt_linux_amd64 -O twhunt
 
-# Navigate to the directory
-cd TWHunt
+# 2. Give executable permissions
+chmod +x twhunt
 
-# Build the binary
-go build -o TWHunt main.go
+# 3. Move it to your local bin directory to use it from anywhere
+sudo mv twhunt /usr/local/bin/
 
-# (Optional) Move to bin path for global usage (Linux/macOS)
-sudo mv TWHunt /usr/local/bin/
+# 4. Run the tool!
+twhunt -d example.com
 ```
 
-## Usage 🎯
+### Method 2: Build from Source (Requires Go)
+If you have Go installed on your system (`sudo apt install golang`), follow these steps:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/tawhid2005/TWHunt.git
+
+# 2. Navigate to the directory
+cd TWHunt
+
+# 3. Build the binary
+go build -o twhunt main.go
+
+# 4. Give executable permissions
+chmod +x twhunt
+
+# 5. Move it to your local bin directory
+sudo mv twhunt /usr/local/bin/
+
+# 6. Run the tool!
+twhunt -d example.com
+```
+
+## 🎯 Usage
 
 It's incredibly simple to use! 
 
 **1. Basic Subdomain Enumeration**
+Just pass the target domain using the `-d` flag. It will quickly find all subdomains.
 ```bash
-./TWHunt -d target.com
+twhunt -d target.com
 ```
 
 **2. Enumerate & Verify Live Hosts**
-By passing the `-v` flag, TWHunt will perform DNS resolution to find out which subdomains are actively resolving.
+By passing the `-v` flag, TWHunt will also perform DNS resolution to find out which of the discovered subdomains are actively alive and resolving.
 ```bash
-./TWHunt -d target.com -v
+twhunt -d target.com -v
 ```
 
-## Supported Sources 📡
+## 📡 Supported Free Sources
 
 1. AbuseIPDB
 2. AlienVault
@@ -75,16 +100,16 @@ By passing the `-v` flag, TWHunt will perform DNS resolution to find out which s
 23. VirusTotal
 24. Wayback
 
-## Author 👨‍💻
+## 👨‍💻 Author
 **MD TALHA HUSSAIN TAWHID**
 - **Location:** Sylhet, Bangladesh
 - **Email:** tawhidh2005@gmail.com
 - **Phone:** +8801711729858
 
-## Contributing 🤝
-Pull requests are welcome! If you find a new free API source, feel free to add it to the `sources/` directory.
+## 🤝 Contributing
+Pull requests are welcome! If you find a new free API source, feel free to add it to the `sources/` directory and submit a PR.
 
-## License 📄
+## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Happy Hunting! 🐞
