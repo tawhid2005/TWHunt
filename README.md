@@ -5,7 +5,7 @@
   <p>📧 tawhidh2005@gmail.com | 📞 +8801711729858 | 🌐 <a href="https://github.com/tawhid2005">GitHub</a></p>
   <br>
   <p>
-    <a href="https://github.com/tawhid2005/TWHunt/releases"><img src="https://img.shields.io/github/v/release/tawhid2005/TWHunt?color=38b2ac&label=Version&style=for-the-badge" alt="Version"></a>
+    <a href="https://github.com/tawhid2005/TWHunt/releases"><img src="https://img.shields.io/github/v/tag/tawhid2005/TWHunt?color=38b2ac&label=Version&style=for-the-badge" alt="Version"></a>
     <a href="https://github.com/tawhid2005/TWHunt/stargazers"><img src="https://img.shields.io/github/stars/tawhid2005/TWHunt?color=gold&label=Stars&style=for-the-badge" alt="Stars"></a>
     <a href="https://github.com/tawhid2005/TWHunt/network/members"><img src="https://img.shields.io/github/forks/tawhid2005/TWHunt?color=blue&label=Forks&style=for-the-badge" alt="Forks"></a>
   </p>
