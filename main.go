@@ -132,7 +132,7 @@ func main() {
 	flag.Parse()
 
 	if *versionPtr {
-		fmt.Printf(" %s[!] TWHunt Version: %s%s\n", core.Mint, "v4.0.0", core.EndC)
+		fmt.Printf(" %s[!] TWHunt Version: %s%s\n", core.Mint, "v4.5.0", core.EndC)
 		os.Exit(0)
 	}
 
@@ -402,7 +402,11 @@ func main() {
 
 	// Generate Desktop Screenshot Gallery
 	if *screenPtr && len(finalSubdomains) > 0 {
-		core.GenerateDesktopGallery(target, screenResults, takeoverResults, probeResults, vulnResults, corsResults, wafResults, paramResults, *silentPtr)
+		mainTarget := *domainPtr
+		if mainTarget == "" && len(targets) > 0 {
+			mainTarget = targets[0]
+		}
+		core.GenerateDesktopGallery(mainTarget, screenResults, takeoverResults, probeResults, vulnResults, corsResults, wafResults, paramResults, *silentPtr)
 	}
 
 	// Generate HTML Report
@@ -664,6 +668,7 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 		fmt.Printf(" %s[✓] RESULTS SAVED TO: %s%s\n", core.Mint, filename, core.EndC)
 	}
 }
+
 
 
 
