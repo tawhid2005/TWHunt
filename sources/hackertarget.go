@@ -2,7 +2,7 @@ package sources
 
 import (
 	"fmt"
-	"subfinder_clone/utils"
+	"twhunt/utils"
 )
 
 type HackerTargetSource struct{}

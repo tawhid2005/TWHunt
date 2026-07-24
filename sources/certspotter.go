@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"subfinder_clone/utils"
+	"twhunt/utils"
 )
 
 type CertSpotterSource struct{}

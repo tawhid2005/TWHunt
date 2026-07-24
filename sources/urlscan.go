@@ -3,7 +3,7 @@ package sources
 import (
 	"encoding/json"
 	"fmt"
-	"subfinder_clone/utils"
+	"twhunt/utils"
 )
 
 type URLScanSource struct{}

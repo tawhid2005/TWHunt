@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"subfinder_clone/core"
-	"subfinder_clone/sources"
+	"twhunt/core"
+	"twhunt/sources"
 )
 
 func main() {
