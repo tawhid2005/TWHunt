@@ -23,18 +23,18 @@ Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains
 - **Auto-Update**: Keep the tool updated natively using `-update`.
 - **Zero Configuration**: No API keys required. Just plug and play!
 
-## 🛠️ Installation on Kali Linux
+## 🛠️ Installation Guide (Kali Linux / Parrot OS)
 
-You can easily install and run **TWHunt** on Kali Linux using one of the following methods:
+You can easily install and run **TWHunt** using one of the following methods:
 
-### Method 1: Download the Pre-compiled Binary (Easiest)
-If you don't want to install Go, you can just download the pre-compiled Linux binary.
+### Method 1: The Quickest Way (Pre-compiled Binary)
+If you just want to run the tool without installing Go, follow these steps:
 
 ```bash
 # 1. Download the Linux binary
 wget https://github.com/tawhid2005/TWHunt/raw/master/twhunt_linux_amd64 -O twhunt
 
-# 2. Give executable permissions
+# 2. Make it executable
 chmod +x twhunt
 
 # 3. Move it to your local bin directory to use it from anywhere
@@ -42,7 +42,7 @@ sudo mv twhunt /usr/local/bin/
 ```
 
 ### Method 2: Build from Source (Requires Go)
-If you have Go installed on your system (`sudo apt install golang`), follow these steps:
+If you are a developer or have Go installed on your system (`sudo apt install golang`), follow these steps:
 
 ```bash
 # 1. Clone the repository
@@ -54,90 +54,72 @@ cd TWHunt
 # 3. Build the binary
 go build -o twhunt main.go
 
-# 4. Give executable permissions
+# 4. Make it executable and move to bin
 chmod +x twhunt
-
-# 5. Move it to your local bin directory
 sudo mv twhunt /usr/local/bin/
 ```
 
-## 🎯 Advanced Usage
+## 🎯 How to Use TWHunt (Masterclass)
 
-**1. Basic Subdomain Enumeration**
+TWHunt is designed to be extremely user-friendly. You can type `twhunt -h` or `twhunt --help` anytime to view the beautiful help menu right inside your terminal!
+
+Here are the most common workflows every Bug Hunter should know:
+
+### 1. Basic Subdomain Enumeration
+Want to find subdomains for a single target quickly? Use the `-d` flag.
 ```bash
 twhunt -d target.com
 ```
 
-**2. Enumerate & Verify Live Hosts**
+### 2. Verify Live Hosts
+Often, many subdomains are dead or parked. By adding the `-v` flag, TWHunt will resolve the DNS and filter out only the **alive and active** subdomains!
 ```bash
 twhunt -d target.com -v
 ```
 
-**3. Save Results to a Text File**
+### 3. Save Results to a Text File
+You can use the `-o` flag to save the final discovered subdomains into a `.txt` file for later use. (Note: If you forget the `-o` flag, TWHunt will smartly ask you at the end of the scan if you want to save it!)
 ```bash
 twhunt -d target.com -o subdomains.txt
+twhunt -d target.com -v -o live_subdomains.txt
 ```
 
-**4. Multi-Domain Scanning (Batch Mode)**
-Have a list of domains in `domains.txt`? Scan them all at once!
+### 4. Batch Scanning (Multi-Domain)
+Got a large scope? Save all your root domains in a file (e.g. `domains.txt`) and let TWHunt scan them all!
 ```bash
 twhunt -dL domains.txt
 ```
 
-**5. Silent Mode & Pipelining**
-Hide banners and logs. Print only raw subdomains. Perfect for pipelining into `httpx` or `nuclei`!
+### 5. Silent Mode & Pipeline Magic
+Professional hackers love pipelining tools. The `-silent` flag removes all banners, loading animations, and logs, printing ONLY the raw subdomains. You can pipe this directly into tools like `httpx` or `nuclei`.
 ```bash
-twhunt -d target.com -silent | httpx
+twhunt -d target.com -silent | httpx -title -status-code
 ```
 
-**6. JSON Output**
-Output results in a structured JSON array.
+### 6. JSON Output format
+For integration into automated scripts or platforms, output your results in JSON.
 ```bash
 twhunt -d target.com -json
-twhunt -d target.com -json -o results.json
 ```
 
-**7. Auto-Update Tool**
-Easily fetch and install the latest version from GitHub automatically.
+### 7. Auto-Update Feature
+Never fall behind on updates! TWHunt can update itself directly from GitHub.
 ```bash
 twhunt -update
 ```
 
-## 📡 Supported Free Sources
+## 📡 Supported OSINT Sources (100% Free)
 
-1. AbuseIPDB
-2. AlienVault
-3. Anubis
-4. BeVigil
-5. BufferOver
-6. CertSpotter
-7. CommonCrawl
-8. Crtsh
-9. FullHunt
-10. HackerTarget
-11. Netcraft
-12. Omnisint
-13. RapidDNS
-14. Riddler
-15. ShodanCT
-16. ShrewdEye
-17. SiteDossier
-18. SubdomainCenter
-19. Synapsint
-20. ThreatCrowd
-21. ThreatMiner
-22. URLScan
-23. VirusTotal
-24. Wayback
+1. AbuseIPDB | 2. AlienVault | 3. Anubis | 4. BeVigil | 5. BufferOver | 6. CertSpotter | 7. CommonCrawl | 8. Crtsh | 9. FullHunt | 10. HackerTarget | 11. Netcraft | 12. Omnisint | 13. RapidDNS | 14. Riddler | 15. ShodanCT | 16. ShrewdEye | 17. SiteDossier | 18. SubdomainCenter | 19. Synapsint | 20. ThreatCrowd | 21. ThreatMiner | 22. URLScan | 23. VirusTotal | 24. Wayback
 
-## 👨‍💻 Author
+## 👨‍💻 Developed By
 **MD TALHA HUSSAIN TAWHID**
 - **Location:** Sylhet, Bangladesh
 - **Email:** tawhidh2005@gmail.com
 - **Phone:** +8801711729858
 
 ## 🤝 Contributing
-Pull requests are welcome! If you find a new free API source, feel free to add it to the `sources/` directory and submit a PR.
+Found a new API? Pull requests are always welcome! Let's build the best Subdomain Enumeration tool together.
 
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

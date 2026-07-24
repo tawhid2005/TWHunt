@@ -15,6 +15,46 @@ import (
 )
 
 func main() {
+	// কাস্টম হেল্প মেনু
+	flag.Usage = func() {
+		fmt.Printf("%s%s\n", core.Sky, core.Bold)
+		fmt.Println(`
+  _______          __  _    _             _   
+ |__   __|        / / | |  | |           | |  
+    | | __      __ /  | |__| | _   _  _ __ | |_ 
+    | | \ \ /\ / /    |  __  || | | || '_ \| __|
+    | |  \ V  V /     | |  | || |_| || | | | |_ 
+    |_|   \_/\_/      |_|  |_| \__,_||_| |_|\__|
+                                                  `)
+		fmt.Printf("%s   An Advanced & Professional Subdomain Hunter%s\n", core.Lavender, core.EndC)
+		fmt.Printf("%s   -------------------------------------------------------%s\n", core.Slate, core.EndC)
+		fmt.Printf("%s   👤 Author  :%s MD TALHA HUSSAIN TAWHID%s\n", core.Sky, core.Mint, core.EndC)
+		fmt.Printf("%s   📧 Email   :%s tawhidh2005@gmail.com%s\n", core.Sky, core.Mint, core.EndC)
+		fmt.Printf("%s   -------------------------------------------------------%s\n\n", core.Slate, core.EndC)
+		
+		fmt.Printf(" %s[DESCRIPTION]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   TWHunt is a fast, modular, and passive subdomain enumeration tool.\n")
+		fmt.Printf("   It gathers subdomains from 24 free OSINT sources without API keys.\n\n")
+
+		fmt.Printf(" %s[USAGE]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   twhunt -d <domain.com> [flags]\n\n")
+
+		fmt.Printf(" %s[FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-d%s      : Target domain (e.g. hackerone.com)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-dL%s     : Target domains list file (e.g. domains.txt)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-v%s      : Verify live status (resolves DNS to find alive subdomains)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-o%s      : Output file to save results (e.g. subdomains.txt)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-silent%s : Silent mode (no banners/logs, pipes nicely into httpx)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-json%s   : JSON output format (prints subdomains as a JSON array)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-update%s : Auto-updates TWHunt to the latest version from GitHub\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-h%s      : Show this help menu\n\n", core.Mint, core.EndC)
+
+		fmt.Printf(" %s[EXAMPLES]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %stwhunt -d example.com%s\n", core.Sky, core.EndC)
+		fmt.Printf("   %stwhunt -d example.com -v -o live.txt%s\n", core.Sky, core.EndC)
+		fmt.Printf("   %stwhunt -dL domains.txt -silent | httpx%s\n\n", core.Sky, core.EndC)
+	}
+
 	domainPtr := flag.String("d", "", "TARGET DOMAIN")
 	verifyPtr := flag.Bool("v", false, "VERIFY LIVE STATUS")
 	outputPtr := flag.String("o", "", "OUTPUT FILE TO SAVE RESULTS")
