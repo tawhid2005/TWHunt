@@ -112,5 +112,32 @@ func main() {
 			file.WriteString(sub + "\n")
 		}
 		fmt.Printf(" %s[✓] RESULTS SAVED TO: %s%s\n", core.Mint, *outputPtr, core.EndC)
+	} else if len(subdomains) > 0 {
+		fmt.Printf("\n %s[?] Do you want to save the results to a file? (y/n): %s", core.Gold, core.EndC)
+		var choice string
+		fmt.Scanln(&choice)
+		choice = strings.ToLower(strings.TrimSpace(choice))
+		
+		if choice == "y" || choice == "yes" {
+			fmt.Printf(" %s[>] Enter filename (e.g. results.txt): %s", core.Mint, core.EndC)
+			var filename string
+			fmt.Scanln(&filename)
+			filename = strings.TrimSpace(filename)
+			
+			if filename != "" {
+				file, err := os.Create(filename)
+				if err != nil {
+					fmt.Printf(" %s[!] ERROR SAVING FILE: %v%s\n", core.Coral, err, core.EndC)
+				} else {
+					defer file.Close()
+					for _, sub := range subdomains {
+						file.WriteString(sub + "\n")
+					}
+					fmt.Printf(" %s[✓] RESULTS SAVED TO: %s%s\n", core.Mint, filename, core.EndC)
+				}
+			} else {
+				fmt.Printf(" %s[!] No filename provided. Skipping save.%s\n", core.Coral, core.EndC)
+			}
+		}
 	}
 }
