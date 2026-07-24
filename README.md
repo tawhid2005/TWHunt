@@ -75,6 +75,12 @@ By passing the `-v` flag, Subfnder will perform DNS resolution to find out which
 23. VirusTotal
 24. Wayback
 
+## Author 👨‍💻
+**MD TALHA HUSSAIN TAWHID**
+- **Location:** Sylhet, Bangladesh
+- **Email:** tawhidh2005@gmail.com
+- **Phone:** +8801711729858
+
 ## Contributing 🤝
 Pull requests are welcome! If you find a new free API source, feel free to add it to the `sources/` directory.
 

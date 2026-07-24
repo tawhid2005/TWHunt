@@ -13,7 +13,7 @@ Currently, only the latest release of Subfnder receives security updates.
 
 We take the security of Subfnder seriously. If you discover a security vulnerability within Subfnder, please DO NOT open a public issue on GitHub. 
 
-Instead, please send an e-mail to our security team at [opensource@cyberciquraty.local]. We will respond to your report within 48 hours.
+Instead, please send an e-mail to our security team at tawhidh2005@gmail.com. We will respond to your report within 48 hours.
 
 When reporting a vulnerability, please include:
 - A detailed description of the vulnerability.

@@ -47,4 +47,4 @@ or harmful.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-[opensource@cyberciquraty.local]. All complaints will be reviewed and investigated promptly and fairly.
+tawhidh2005@gmail.com. All complaints will be reviewed and investigated promptly and fairly.
