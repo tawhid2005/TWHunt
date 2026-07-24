@@ -15,11 +15,13 @@ Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains
 
 - **24 Built-in Free Sources**: Uses Regex & JSON scraping engines to fetch data from crt.sh, HackerTarget, URLScan, RapidDNS, ShodanCT, ThreatCrowd, and many more!
 - **Extremely Fast**: Uses Go routines (`goroutines`) and channels for concurrent fetching.
-- **Zero Configuration**: No API keys required. Just plug and play!
+- **Silent Mode**: Pipe results into other tools easily using `-silent`.
+- **JSON Output**: Save or print results in valid JSON format using `-json`.
+- **Multi-Domain Scanning**: Scan hundreds of domains at once using a text file with `-dL`.
 - **Live Host Verification**: Optionally resolve DNS to verify which subdomains are actively alive.
-- **Save to File**: Save all discovered subdomains to a `.txt` file automatically.
-- **Beautiful UI**: Colorful ASCII banners, live spinner animations, and clean summary tables.
-- **Cross-Platform**: Works natively on Linux (Kali/Parrot), Windows, and macOS.
+- **Smart Retries**: Built-in timeout and retry logic bypasses temporary rate-limits.
+- **Auto-Update**: Keep the tool updated natively using `-update`.
+- **Zero Configuration**: No API keys required. Just plug and play!
 
 ## 🛠️ Installation on Kali Linux
 
@@ -59,27 +61,46 @@ chmod +x twhunt
 sudo mv twhunt /usr/local/bin/
 ```
 
-## 🎯 Usage
-
-It's incredibly simple to use! 
+## 🎯 Advanced Usage
 
 **1. Basic Subdomain Enumeration**
-Just pass the target domain using the `-d` flag. It will quickly find all subdomains.
 ```bash
 twhunt -d target.com
 ```
 
 **2. Enumerate & Verify Live Hosts**
-By passing the `-v` flag, TWHunt will also perform DNS resolution to find out which of the discovered subdomains are actively alive and resolving.
 ```bash
 twhunt -d target.com -v
 ```
 
 **3. Save Results to a Text File**
-You can use the `-o` flag to save the final discovered subdomains into a `.txt` file for later use.
 ```bash
 twhunt -d target.com -o subdomains.txt
-twhunt -d target.com -v -o live_subdomains.txt
+```
+
+**4. Multi-Domain Scanning (Batch Mode)**
+Have a list of domains in `domains.txt`? Scan them all at once!
+```bash
+twhunt -dL domains.txt
+```
+
+**5. Silent Mode & Pipelining**
+Hide banners and logs. Print only raw subdomains. Perfect for pipelining into `httpx` or `nuclei`!
+```bash
+twhunt -d target.com -silent | httpx
+```
+
+**6. JSON Output**
+Output results in a structured JSON array.
+```bash
+twhunt -d target.com -json
+twhunt -d target.com -json -o results.json
+```
+
+**7. Auto-Update Tool**
+Easily fetch and install the latest version from GitHub automatically.
+```bash
+twhunt -update
 ```
 
 ## 📡 Supported Free Sources

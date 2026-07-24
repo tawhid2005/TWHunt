@@ -17,22 +17,41 @@ var HTTPClient = &http.Client{
 
 // RequestAPI একটি জেনেরিক ফাংশন যা যেকোনো URL এ GET রিকোয়েস্ট করে রেসপন্স বডি রিটার্ন করে
 func RequestAPI(url string) ([]byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	// পাইথন স্ক্রিপ্টের মতো User-Agent সেট করা
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+	maxRetries := 3
+	var lastErr error
 
-	resp, err := HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+	for i := 0; i < maxRetries; i++ {
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+		// পাইথন স্ক্রিপ্টের মতো User-Agent সেট করা
+		req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, http.ErrServerClosed // যেকোনো এররের জন্য ডামি এরর
+		resp, err := HTTPClient.Do(req)
+		if err != nil {
+			lastErr = err
+			time.Sleep(2 * time.Second) // ফেইল করলে ২ সেকেন্ড ওয়েট করে আবার ট্রাই করবে
+			continue
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			lastErr = http.ErrServerClosed
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		
+		return body, nil
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return nil, lastErr
 }
