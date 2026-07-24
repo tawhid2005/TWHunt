@@ -65,6 +65,13 @@ func main() {
 		fmt.Printf("   %s-axfr%s      : Check for DNS Zone Transfer vulnerabilities\n", core.Coral, core.EndC)
 		fmt.Printf("   %s-params%s    : Fuzz for hidden sensitive parameters (e.g. ?admin=1)\n", core.Coral, core.EndC)
 		
+		fmt.Printf("\n %s[INVINCIBLE OFFENSIVE FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-screenshot%s: Capture visual screenshots of live subdomains\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-graphql%s   : Dump database schemas via GraphQL Introspection\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-fuzz%s      : Fast-fuzz critical directories (e.g. /admin, /api)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-blh%s       : Detect Broken Link Hijacking (e.g. dead Twitter links)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-emails%s    : Scrape and extract exposed employee emails for OSINT\n", core.Coral, core.EndC)
+		
 		fmt.Printf("\n %s[OUTPUT FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-o%s         : Output file to save results (e.g. results.txt)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-json%s      : JSON output format (prints subdomains as a JSON array)\n", core.Mint, core.EndC)
@@ -106,6 +113,12 @@ func main() {
 	wafPtr := flag.Bool("waf", false, "DETECT WAF")
 	axfrPtr := flag.Bool("axfr", false, "CHECK DNS ZONE TRANSFER")
 	paramsPtr := flag.Bool("params", false, "FUZZ HIDDEN PARAMETERS")
+	
+	screenPtr := flag.Bool("screenshot", false, "CAPTURE SCREENSHOTS")
+	graphqlPtr := flag.Bool("graphql", false, "DETECT GRAPHQL")
+	fuzzPtr := flag.Bool("fuzz", false, "FUZZ CRITICAL DIRECTORIES")
+	blhPtr := flag.Bool("blh", false, "DETECT BROKEN LINK HIJACKING")
+	emailsPtr := flag.Bool("emails", false, "EXTRACT EXPOSED EMAILS")
 	
 	flag.Parse()
 
@@ -230,7 +243,7 @@ func main() {
 		subdomains = uniqueSubdomains
 
 		// Verify Live Status or Wildcard Filter
-		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr || *jsPtr || *techPtr || *vulnPtr || *corsPtr || *wafPtr || *paramsPtr {
+		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr || *jsPtr || *techPtr || *vulnPtr || *corsPtr || *wafPtr || *paramsPtr || *screenPtr || *graphqlPtr || *fuzzPtr || *blhPtr || *emailsPtr {
 			if !*silentPtr {
 				fmt.Printf(" %s[*] VERIFYING LIVE STATUS & FILTERING...%s\n", core.Gold, core.EndC)
 			}
@@ -325,6 +338,37 @@ func main() {
 		paramResults = core.FuzzHiddenParams(finalSubdomains, *silentPtr)
 	}
 
+	// Invincible Features
+	var screenResults map[string]string
+	if *screenPtr && len(finalSubdomains) > 0 {
+		screenResults = core.TakeScreenshots(finalSubdomains, *silentPtr)
+	}
+
+	var graphqlResults map[string]string
+	if *graphqlPtr && len(finalSubdomains) > 0 {
+		graphqlResults = core.DetectGraphQL(finalSubdomains, *silentPtr)
+	}
+
+	var fuzzResults map[string][]string
+	if *fuzzPtr && len(finalSubdomains) > 0 {
+		fuzzResults = core.FuzzDirectories(finalSubdomains, *silentPtr)
+	}
+
+	var blhResults map[string][]string
+	if *blhPtr && len(finalSubdomains) > 0 {
+		blhResults = core.DetectBLH(finalSubdomains, *silentPtr)
+	}
+
+	var emailResults map[string][]string
+	if *emailsPtr && len(finalSubdomains) > 0 {
+		// Use the first domain or the -d flag value
+		mainTarget := *domainPtr
+		if mainTarget == "" && len(targets) > 0 {
+			mainTarget = targets[0]
+		}
+		emailResults = core.ExtractEmails(finalSubdomains, mainTarget, *silentPtr)
+	}
+
 	// Port Scanning
 	var portResults map[string][]string
 	if *portsPtr != "" && len(finalSubdomains) > 0 {
@@ -337,7 +381,7 @@ func main() {
 		if *outputPtr != "" && strings.HasSuffix(*outputPtr, ".html") {
 			htmlName = *outputPtr
 		}
-		core.GenerateHTMLReport(htmlName, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, *silentPtr)
+		core.GenerateHTMLReport(htmlName, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, screenResults, graphqlResults, fuzzResults, blhResults, emailResults, *silentPtr)
 	}
 
 	// Console Output
@@ -353,6 +397,11 @@ func main() {
 			CORS       map[string]string            `json:"cors,omitempty"`
 			WAF        map[string]string            `json:"waf,omitempty"`
 			Params     map[string]string            `json:"hidden_params,omitempty"`
+			Screen     map[string]string            `json:"screenshots,omitempty"`
+			GraphQL    map[string]string            `json:"graphql,omitempty"`
+			Fuzz       map[string][]string          `json:"fuzz_dirs,omitempty"`
+			BLH        map[string][]string          `json:"blh,omitempty"`
+			Emails     map[string][]string          `json:"emails,omitempty"`
 			Wayback    []string                     `json:"wayback_urls,omitempty"`
 		}
 		outData := OutputData{
@@ -366,6 +415,11 @@ func main() {
 			CORS:       corsResults,
 			WAF:        wafResults,
 			Params:     paramResults,
+			Screen:     screenResults,
+			GraphQL:    graphqlResults,
+			Fuzz:       fuzzResults,
+			BLH:        blhResults,
+			Emails:     emailResults,
 			Wayback:    allWaybackURLs,
 		}
 		jsonData, _ := json.MarshalIndent(outData, "", "  ")
@@ -425,6 +479,22 @@ func main() {
 			if params, ok := paramResults[sub]; ok {
 				line += fmt.Sprintf("\n    %s↳ [HIDDEN PARAMS] %s%s", core.Sky, params, core.EndC)
 			}
+			
+			if s, ok := screenResults[sub]; ok {
+				line += fmt.Sprintf("\n    %s↳ [SCREENSHOT] %s%s", core.Mint, s, core.EndC)
+			}
+			if g, ok := graphqlResults[sub]; ok {
+				line += fmt.Sprintf("\n    %s↳ [GRAPHQL] %s%s", core.Gold, g, core.EndC)
+			}
+			if f, ok := fuzzResults[sub]; ok && len(f) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [FUZZ] %s%s", core.Coral, strings.Join(f, ", "), core.EndC)
+			}
+			if b, ok := blhResults[sub]; ok && len(b) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [BROKEN LINKS] %s%s", core.Coral, strings.Join(b, ", "), core.EndC)
+			}
+			if e, ok := emailResults[sub]; ok && len(e) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [EMAILS] %s%s", core.Sky, strings.Join(e, ", "), core.EndC)
+			}
 
 			fmt.Println(line)
 		}
@@ -447,7 +517,7 @@ func main() {
 
 	// Text Save Logic
 	if *outputPtr != "" && len(finalSubdomains) > 0 && !*htmlPtr {
-		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, allWaybackURLs, *jsonPtr, *silentPtr)
+		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, screenResults, graphqlResults, fuzzResults, blhResults, emailResults, allWaybackURLs, *jsonPtr, *silentPtr)
 	} else if len(finalSubdomains) > 0 && !*silentPtr && !*jsonPtr && !*htmlPtr {
 		fmt.Printf("\n %s[?] Do you want to save the results to a file? (y/n): %s", core.Gold, core.EndC)
 		var choice string
@@ -461,13 +531,13 @@ func main() {
 			filename = strings.TrimSpace(filename)
 			
 			if filename != "" {
-				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, allWaybackURLs, false, *silentPtr)
+				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, screenResults, graphqlResults, fuzzResults, blhResults, emailResults, allWaybackURLs, false, *silentPtr)
 			}
 		}
 	}
 }
 
-func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, wayback []string, isJson bool, isSilent bool) {
+func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, screenResults map[string]string, graphqlResults map[string]string, fuzzResults map[string][]string, blhResults map[string][]string, emailResults map[string][]string, wayback []string, isJson bool, isSilent bool) {
 	file, err := os.Create(filename)
 	if err != nil {
 		if !isSilent {
@@ -509,6 +579,21 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 		}
 		if p, ok := paramResults[sub]; ok {
 			line += " [PARAMS: " + p + "]"
+		}
+		if s, ok := screenResults[sub]; ok {
+			line += " [SCREEN: " + s + "]"
+		}
+		if g, ok := graphqlResults[sub]; ok {
+			line += " [GRAPHQL: " + g + "]"
+		}
+		if f, ok := fuzzResults[sub]; ok && len(f) > 0 {
+			line += " [FUZZ: " + strings.Join(f, ", ") + "]"
+		}
+		if b, ok := blhResults[sub]; ok && len(b) > 0 {
+			line += " [BLH: " + strings.Join(b, ", ") + "]"
+		}
+		if e, ok := emailResults[sub]; ok && len(e) > 0 {
+			line += " [EMAILS: " + strings.Join(e, ", ") + "]"
 		}
 		file.WriteString(line + "\n")
 	}

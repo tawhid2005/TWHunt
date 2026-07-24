@@ -7,7 +7,7 @@ import (
 )
 
 // GenerateHTMLReport creates a responsive HTML dashboard for the results
-func GenerateHTMLReport(filename string, subdomains []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]ProbeResult, waybackUrls []string, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, silent bool) {
+func GenerateHTMLReport(filename string, subdomains []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]ProbeResult, waybackUrls []string, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, screenshotResults map[string]string, graphqlResults map[string]string, fuzzResults map[string][]string, blhResults map[string][]string, emailResults map[string][]string, silent bool) {
 	if !silent {
 		fmt.Printf(" %s[*] GENERATING HTML REPORT...%s\n", Gold, EndC)
 	}
@@ -38,11 +38,14 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
         .badge-red { background-color: #f85149; }
         .badge-yellow { background-color: #d29922; color: #000; }
         .badge-blue { background-color: #1f6feb; }
+        .badge-purple { background: #8e44ad; color: #fff; }
+        .badge-orange { background: #e67e22; color: #fff; }
+        .screenshot-img { max-width: 100%; height: auto; border-radius: 4px; margin-top: 10px; border: 1px solid #444; }
         .footer { text-align: center; margin-top: 50px; color: #8b949e; font-size: 0.9em; }
         .urls-section { background-color: #161b22; padding: 20px; border-radius: 8px; max-height: 400px; overflow-y: auto; font-family: monospace; }
         .urls-section a { color: #8b949e; text-decoration: none; }
         .urls-section a:hover { color: #58a6ff; }
-        .vuln-list { margin: 0; padding-left: 15px; color: #f85149; }
+        .vuln-list { list-style: none; padding-left: 0; margin-top: 5px; font-size: 0.85rem; color: #ff6b6b; }
     </style>
 </head>
 <body>
@@ -153,6 +156,37 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
 		}
 		if p, ok := paramResults[sub]; ok {
 			critHtml += `<span class="badge badge-blue">PARAMS: ` + p + `</span><br>`
+		}
+		if g, ok := graphqlResults[sub]; ok {
+			critHtml += `<span class="badge badge-purple">GRAPHQL: ` + g + `</span><br>`
+		}
+		if f, ok := fuzzResults[sub]; ok && len(f) > 0 {
+			critHtml += `<span class="badge badge-orange">FUZZ (HIDDEN DIRS)</span>`
+			critHtml += `<ul class="vuln-list">`
+			for _, s := range f {
+				critHtml += `<li>` + s + `</li>`
+			}
+			critHtml += `</ul>`
+		}
+		if b, ok := blhResults[sub]; ok && len(b) > 0 {
+			critHtml += `<span class="badge badge-red">BROKEN LINKS (BLH)</span>`
+			critHtml += `<ul class="vuln-list">`
+			for _, s := range b {
+				critHtml += `<li>` + s + `</li>`
+			}
+			critHtml += `</ul>`
+		}
+		if e, ok := emailResults[sub]; ok && len(e) > 0 {
+			critHtml += `<span class="badge badge-blue">OSINT EMAILS</span>`
+			critHtml += `<ul class="vuln-list" style="color: #3498db;">`
+			for _, s := range e {
+				critHtml += `<li>` + s + `</li>`
+			}
+			critHtml += `</ul>`
+		}
+		
+		if img, ok := screenshotResults[sub]; ok {
+			critHtml += `<br><img src="` + img + `" class="screenshot-img" alt="Screenshot of ` + sub + `">`
 		}
 		
 		if critHtml == "" {
