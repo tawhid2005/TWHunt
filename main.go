@@ -46,10 +46,17 @@ func main() {
 		fmt.Printf("\n %s[ADVANCED RECON FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-nw%s        : Enable wildcard DNS filtering (removes false positives)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-w%s         : Active brute-forcing wordlist file (e.g. subdomains.txt)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-alt%s       : Alteration/Permutation to find hidden subdomains (e.g. dev-api)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-ports%s     : TCP Ports to scan on live subdomains (e.g. 80,443)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-takeover%s  : Detect vulnerable Subdomain Takeovers (e.g. GitHub, Heroku, S3)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-probe%s     : Probe HTTP/HTTPS status codes and Page Titles\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-urls%s      : Fetch historical endpoints and URLs from Wayback Machine\n", core.Mint, core.EndC)
+		
+		fmt.Printf("\n %s[GOD-TIER VULNERABILITY FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-probe%s     : Probe HTTP/HTTPS status codes and Page Titles\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-js%s        : Scan live subdomains for leaked JavaScript Secrets (API Keys, Tokens)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-tech%s      : Detect Technology Stack (e.g. Nginx, PHP, React)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-vuln%s      : Probe for low-hanging bugs (e.g. /.env, /.git/config)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-notify%s    : Discord webhook URL to alert on new subdomains found\n", core.Coral, core.EndC)
 		
 		fmt.Printf("\n %s[OUTPUT FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-o%s         : Output file to save results (e.g. results.txt)\n", core.Mint, core.EndC)
@@ -59,9 +66,11 @@ func main() {
 		
 		fmt.Printf("\n %s[MISC FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-update%s    : Auto-updates TWHunt to the latest version from GitHub\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-version%s   : Show tool version\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-h%s         : Show this help menu\n\n", core.Mint, core.EndC)
 	}
 
+	versionPtr := flag.Bool("version", false, "SHOW VERSION")
 	domainPtr := flag.String("d", "", "TARGET DOMAIN")
 	verifyPtr := flag.Bool("v", false, "VERIFY LIVE STATUS")
 	outputPtr := flag.String("o", "", "OUTPUT FILE TO SAVE RESULTS")
@@ -72,6 +81,7 @@ func main() {
 	
 	nwPtr := flag.Bool("nw", false, "FILTER WILDCARD DNS")
 	wordlistPtr := flag.String("w", "", "WORDLIST FOR BRUTEFORCING")
+	altPtr := flag.Bool("alt", false, "SUBDOMAIN ALTERATION")
 	portsPtr := flag.String("ports", "", "PORTS TO SCAN (e.g. 80,443)")
 	htmlPtr := flag.Bool("html", false, "GENERATE HTML REPORT")
 	
@@ -79,7 +89,11 @@ func main() {
 	probePtr := flag.Bool("probe", false, "PROBE HTTP STATUS AND TITLES")
 	urlsPtr := flag.Bool("urls", false, "FETCH WAYBACK MACHINE URLS")
 	
-	versionPtr := flag.Bool("version", false, "SHOW VERSION")
+	jsPtr := flag.Bool("js", false, "FIND JS SECRETS")
+	techPtr := flag.Bool("tech", false, "DETECT TECH STACK")
+	vulnPtr := flag.Bool("vuln", false, "PROBE VULNERABILITIES")
+	notifyPtr := flag.String("notify", "", "DISCORD WEBHOOK URL")
+	
 	flag.Parse()
 
 	if *versionPtr {
@@ -114,7 +128,7 @@ func main() {
 		fmt.Printf("%s   -------------------------------------------------------%s\n\n", core.Slate, core.EndC)
 	}
 
-	// Load Config File (creates if missing)
+	// Load Config File
 	core.LoadConfig(*silentPtr)
 
 	var targets []string
@@ -181,6 +195,11 @@ func main() {
 			subdomains = append(subdomains, bruted...)
 		}
 
+		if *altPtr {
+			altered := core.AlterSubdomains(subdomains, target, *silentPtr)
+			subdomains = append(subdomains, altered...)
+		}
+
 		if *urlsPtr {
 			urls := core.FetchWaybackURLs(target, *silentPtr)
 			allWaybackURLs = append(allWaybackURLs, urls...)
@@ -198,7 +217,7 @@ func main() {
 		subdomains = uniqueSubdomains
 
 		// Verify Live Status or Wildcard Filter
-		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr {
+		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr || *jsPtr || *techPtr || *vulnPtr {
 			if !*silentPtr {
 				fmt.Printf(" %s[*] VERIFYING LIVE STATUS & FILTERING...%s\n", core.Gold, core.EndC)
 			}
@@ -217,6 +236,9 @@ func main() {
 				fmt.Printf(" %s[✓] TOTAL LIVE/VALID HOSTS FOUND FOR %s: %d%s\n", core.Mint, target, len(subdomains), core.EndC)
 			}
 		}
+
+		// State comparison and Discord Notify
+		core.CompareAndNotify(target, subdomains, *notifyPtr, *silentPtr)
 
 		allDiscoveredSubdomains = append(allDiscoveredSubdomains, subdomains...)
 	}
@@ -243,6 +265,24 @@ func main() {
 	if *probePtr && len(finalSubdomains) > 0 {
 		probeResults = core.ProbeHTTP(finalSubdomains, *silentPtr)
 	}
+	
+	// JS Secrets
+	var jsResults map[string][]string
+	if *jsPtr && len(finalSubdomains) > 0 {
+		jsResults = core.FindJSSecrets(finalSubdomains, *silentPtr)
+	}
+	
+	// Tech Stack
+	var techResults map[string][]string
+	if *techPtr && len(finalSubdomains) > 0 {
+		techResults = core.DetectTechStack(finalSubdomains, *silentPtr)
+	}
+	
+	// Vulnerability Prober
+	var vulnResults map[string][]string
+	if *vulnPtr && len(finalSubdomains) > 0 {
+		vulnResults = core.ProbeVulns(finalSubdomains, *silentPtr)
+	}
 
 	// Port Scanning
 	var portResults map[string][]string
@@ -256,17 +296,19 @@ func main() {
 		if *outputPtr != "" && strings.HasSuffix(*outputPtr, ".html") {
 			htmlName = *outputPtr
 		}
-		core.GenerateHTMLReport(htmlName, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, *silentPtr)
+		core.GenerateHTMLReport(htmlName, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, jsResults, techResults, vulnResults, *silentPtr)
 	}
 
 	// Console Output
 	if *jsonPtr {
-		// Prepare a mega JSON struct
 		type OutputData struct {
 			Subdomains []string                     `json:"subdomains"`
 			Ports      map[string][]string          `json:"ports,omitempty"`
 			Takeovers  map[string]string            `json:"takeovers,omitempty"`
 			Probes     map[string]core.ProbeResult  `json:"probes,omitempty"`
+			JSSecrets  map[string][]string          `json:"js_secrets,omitempty"`
+			TechStack  map[string][]string          `json:"tech_stack,omitempty"`
+			Vulns      map[string][]string          `json:"vulns,omitempty"`
 			Wayback    []string                     `json:"wayback_urls,omitempty"`
 		}
 		outData := OutputData{
@@ -274,6 +316,9 @@ func main() {
 			Ports:      portResults,
 			Takeovers:  takeoverResults,
 			Probes:     probeResults,
+			JSSecrets:  jsResults,
+			TechStack:  techResults,
+			Vulns:      vulnResults,
 			Wayback:    allWaybackURLs,
 		}
 		jsonData, _ := json.MarshalIndent(outData, "", "  ")
@@ -285,12 +330,17 @@ func main() {
 			// Base line
 			line := fmt.Sprintf(" %s→%s %s%-30s%s ", core.Mint, core.EndC, core.Silver, sub, core.EndC)
 			
-			// Append Port Info
+			// Tech Stack
+			if tech, ok := techResults[sub]; ok && len(tech) > 0 {
+				line += fmt.Sprintf("%s[%s]%s ", core.Sky, strings.Join(tech, ", "), core.EndC)
+			}
+			
+			// Port Info
 			if ports, ok := portResults[sub]; ok && len(ports) > 0 {
 				line += fmt.Sprintf("%s[Ports: %s]%s ", core.Coral, strings.Join(ports, ","), core.EndC)
 			}
 			
-			// Append Probe Info
+			// Probe Info
 			if probe, ok := probeResults[sub]; ok && probe.StatusCode > 0 {
 				color := core.Mint
 				if probe.StatusCode >= 400 {
@@ -302,6 +352,16 @@ func main() {
 			// Append Takeover Info
 			if tk, ok := takeoverResults[sub]; ok {
 				line += fmt.Sprintf("\n    %s↳ [!!! VULNERABLE TO TAKEOVER !!!] %s%s", core.Coral, tk, core.EndC)
+			}
+			
+			// Append JS Secrets
+			if js, ok := jsResults[sub]; ok && len(js) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [!!! JS SECRETS FOUND !!!] %s%s", core.Coral, strings.Join(js, ", "), core.EndC)
+			}
+			
+			// Append Vulns
+			if vulns, ok := vulnResults[sub]; ok && len(vulns) > 0 {
+				line += fmt.Sprintf("\n    %s↳ [!!! VULNERABILITY EXPOSED !!!] %s%s", core.Coral, strings.Join(vulns, ", "), core.EndC)
 			}
 
 			fmt.Println(line)
@@ -325,7 +385,7 @@ func main() {
 
 	// Text Save Logic
 	if *outputPtr != "" && len(finalSubdomains) > 0 && !*htmlPtr {
-		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, *jsonPtr, *silentPtr)
+		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, allWaybackURLs, *jsonPtr, *silentPtr)
 	} else if len(finalSubdomains) > 0 && !*silentPtr && !*jsonPtr && !*htmlPtr {
 		fmt.Printf("\n %s[?] Do you want to save the results to a file? (y/n): %s", core.Gold, core.EndC)
 		var choice string
@@ -339,13 +399,13 @@ func main() {
 			filename = strings.TrimSpace(filename)
 			
 			if filename != "" {
-				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, false, *silentPtr)
+				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, allWaybackURLs, false, *silentPtr)
 			}
 		}
 	}
 }
 
-func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, wayback []string, isJson bool, isSilent bool) {
+func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, wayback []string, isJson bool, isSilent bool) {
 	file, err := os.Create(filename)
 	if err != nil {
 		if !isSilent {
@@ -356,12 +416,14 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 	defer file.Close()
 	
 	if isJson {
-		// Output handled in main block for full JSON structure
-		return
+		return // handled above
 	}
 	
 	for _, sub := range data {
 		line := sub
+		if tech, ok := techResults[sub]; ok && len(tech) > 0 {
+			line += " [TECH: " + strings.Join(tech, ", ") + "]"
+		}
 		if ports, ok := portResults[sub]; ok && len(ports) > 0 {
 			line += " [PORTS: " + strings.Join(ports, ",") + "]"
 		}
@@ -370,6 +432,12 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 		}
 		if tk, ok := tkResults[sub]; ok {
 			line += " [TAKEOVER: " + tk + "]"
+		}
+		if js, ok := jsResults[sub]; ok && len(js) > 0 {
+			line += " [JS SECRETS: " + strings.Join(js, ", ") + "]"
+		}
+		if v, ok := vulnResults[sub]; ok && len(v) > 0 {
+			line += " [VULNS: " + strings.Join(v, ", ") + "]"
 		}
 		file.WriteString(line + "\n")
 	}
@@ -385,4 +453,3 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 		fmt.Printf(" %s[✓] RESULTS SAVED TO: %s%s\n", core.Mint, filename, core.EndC)
 	}
 }
-

@@ -7,7 +7,7 @@ import (
 )
 
 // GenerateHTMLReport creates a responsive HTML dashboard for the results
-func GenerateHTMLReport(filename string, subdomains []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]ProbeResult, waybackUrls []string, silent bool) {
+func GenerateHTMLReport(filename string, subdomains []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]ProbeResult, waybackUrls []string, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, silent bool) {
 	if !silent {
 		fmt.Printf(" %s[*] GENERATING HTML REPORT...%s\n", Gold, EndC)
 	}
@@ -18,14 +18,14 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TWHunt Bug Bounty Recon Report</title>
+    <title>TWHunt God-Tier Recon Report</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1500px; margin: 0 auto; }
         .header { text-align: center; padding: 40px 0; border-bottom: 2px solid #30363d; margin-bottom: 30px; }
         h1 { color: #58a6ff; margin: 0 0 10px 0; font-size: 2.5em; }
-        .stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 30px; flex-wrap: wrap; }
-        .stat-box { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; text-align: center; width: 220px; }
+        .stats { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .stat-box { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; text-align: center; width: 180px; }
         .stat-value { font-size: 2em; color: #3fb950; font-weight: bold; }
         .stat-value.red { color: #f85149; }
         table { width: 100%; border-collapse: collapse; background-color: #161b22; border-radius: 8px; overflow: hidden; margin-bottom: 40px; }
@@ -34,20 +34,22 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
         tr:hover { background-color: #30363d; }
         .subdomain { color: #58a6ff; font-weight: bold; text-decoration: none; }
         .subdomain:hover { text-decoration: underline; }
-        .badge { background-color: #238636; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.85em; margin-right: 5px; }
+        .badge { background-color: #238636; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.85em; margin-right: 5px; display: inline-block; margin-bottom: 3px;}
         .badge-red { background-color: #f85149; }
         .badge-yellow { background-color: #d29922; color: #000; }
+        .badge-blue { background-color: #1f6feb; }
         .footer { text-align: center; margin-top: 50px; color: #8b949e; font-size: 0.9em; }
         .urls-section { background-color: #161b22; padding: 20px; border-radius: 8px; max-height: 400px; overflow-y: auto; font-family: monospace; }
         .urls-section a { color: #8b949e; text-decoration: none; }
         .urls-section a:hover { color: #58a6ff; }
+        .vuln-list { margin: 0; padding-left: 15px; color: #f85149; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>TWHunt Ultimate Report</h1>
-            <p>Advanced Passive & Active Subdomain Reconnaissance</p>
+            <p>God-Tier Passive & Active Subdomain Reconnaissance</p>
             <p>Generated on: ` + time.Now().Format(time.RFC1123) + `</p>
         </div>
 
@@ -57,8 +59,16 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
                 <div class="stat-value">` + fmt.Sprintf("%d", len(subdomains)) + `</div>
             </div>
             <div class="stat-box">
-                <div>Takeovers Found</div>
+                <div>Takeovers</div>
                 <div class="stat-value red">` + fmt.Sprintf("%d", len(tkResults)) + `</div>
+            </div>
+            <div class="stat-box">
+                <div>JS Secrets Leaked</div>
+                <div class="stat-value red">` + fmt.Sprintf("%d", len(jsResults)) + `</div>
+            </div>
+            <div class="stat-box">
+                <div>Vulns Exposed</div>
+                <div class="stat-value red">` + fmt.Sprintf("%d", len(vulnResults)) + `</div>
             </div>
             <div class="stat-box">
                 <div>Wayback URLs</div>
@@ -72,28 +82,37 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
                 <tr>
                     <th>#</th>
                     <th>Subdomain</th>
-                    <th>Takeover</th>
+                    <th>Tech Stack</th>
                     <th>HTTP Status</th>
-                    <th>Page Title</th>
-                    <th>Open Ports</th>
+                    <th>Takeovers / Secrets / Vulns</th>
                 </tr>
             </thead>
             <tbody>`
 
 	for i, sub := range subdomains {
 		html += `<tr><td>` + fmt.Sprintf("%d", i+1) + `</td>`
-		html += `<td><a href="http://` + sub + `" target="_blank" class="subdomain">` + sub + `</a></td>`
 		
-		// Takeovers
-		tkHtml := `<span style="color:#8b949e">-</span>`
-		if tk, ok := tkResults[sub]; ok {
-			tkHtml = `<span class="badge badge-red">` + tk + `</span>`
+		subLink := `<td><a href="http://` + sub + `" target="_blank" class="subdomain">` + sub + `</a><br>`
+		if ports, ok := portResults[sub]; ok && len(ports) > 0 {
+			for _, p := range ports {
+				subLink += `<span class="badge">Port: ` + p + `</span>`
+			}
 		}
-		html += `<td>` + tkHtml + `</td>`
+		subLink += `</td>`
+		html += subLink
+		
+		// Tech Stack
+		techHtml := `<span style="color:#8b949e">-</span>`
+		if tech, ok := techResults[sub]; ok && len(tech) > 0 {
+			techHtml = ""
+			for _, t := range tech {
+				techHtml += `<span class="badge badge-blue">` + t + `</span>`
+			}
+		}
+		html += `<td>` + techHtml + `</td>`
 
-		// Probes
+		// Probes (Status & Title)
 		statusHtml := `<span style="color:#8b949e">-</span>`
-		titleHtml := `<span style="color:#8b949e">-</span>`
 		if pr, ok := probeResults[sub]; ok && pr.StatusCode > 0 {
 			badgeClass := "badge"
 			if pr.StatusCode >= 400 && pr.StatusCode < 500 {
@@ -101,22 +120,36 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
 			} else if pr.StatusCode >= 500 {
 				badgeClass = "badge badge-red"
 			}
-			statusHtml = `<span class="` + badgeClass + `">` + fmt.Sprintf("%d", pr.StatusCode) + `</span>`
-			titleHtml = pr.Title
+			statusHtml = `<span class="` + badgeClass + `">` + fmt.Sprintf("%d", pr.StatusCode) + `</span><br><small>` + pr.Title + `</small>`
 		}
 		html += `<td>` + statusHtml + `</td>`
-		html += `<td>` + titleHtml + `</td>`
 
-		// Ports
-		portsHtml := ""
-		if ports, ok := portResults[sub]; ok && len(ports) > 0 {
-			for _, p := range ports {
-				portsHtml += `<span class="badge">` + p + `</span>`
-			}
-		} else {
-			portsHtml = `<span style="color:#8b949e">-</span>`
+		// Critical findings column
+		critHtml := ""
+		if tk, ok := tkResults[sub]; ok {
+			critHtml += `<span class="badge badge-red">TAKEOVER: ` + tk + `</span><br>`
 		}
-		html += `<td>` + portsHtml + `</td></tr>`
+		if js, ok := jsResults[sub]; ok && len(js) > 0 {
+			critHtml += `<span class="badge badge-red">SECRETS FOUND!</span>`
+			critHtml += `<ul class="vuln-list">`
+			for _, s := range js {
+				critHtml += `<li>` + s + `</li>`
+			}
+			critHtml += `</ul>`
+		}
+		if v, ok := vulnResults[sub]; ok && len(v) > 0 {
+			critHtml += `<span class="badge badge-red">EXPOSED FILES!</span>`
+			critHtml += `<ul class="vuln-list">`
+			for _, s := range v {
+				critHtml += `<li>` + s + `</li>`
+			}
+			critHtml += `</ul>`
+		}
+		
+		if critHtml == "" {
+			critHtml = `<span style="color:#8b949e">Safe</span>`
+		}
+		html += `<td>` + critHtml + `</td></tr>`
 	}
 
 	html += `

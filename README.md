@@ -22,6 +22,11 @@ It seamlessly integrates **24 highly reliable, completely FREE APIs** to discove
 
 - **API Key Configuration (`config.json`)**: Expand your OSINT capabilities by seamlessly adding API keys for premium sources like Shodan and SecurityTrails.
 - **Active Brute-Forcing**: Use custom wordlists to actively hunt down hidden subdomains using a highly concurrent DNS resolver engine.
+- **JavaScript Secrets Finder**: Actively fetches and parses `.js` files across subdomains to find hardcoded AWS Keys, Stripe Tokens, and API credentials.
+- **Tech Stack Detection**: Analyzes HTTP headers and cookies to instantly identify technologies (Nginx, React, PHP, ASP.NET).
+- **Vulnerability Prober**: Automatically probes discovered subdomains for low-hanging bugs (e.g., exposed `/.env`, `/.git/config`, `/phpinfo.php`).
+- **Discord Notification System**: Saves scan states and alerts you on Discord via Webhooks the second a new subdomain is deployed.
+- **Subdomain Permutation (Alteration)**: Generates and resolves mutations of discovered subdomains (e.g., `api-dev`, `dev-staging`) to uncover hidden endpoints.
 - **Subdomain Takeover Detection**: Automatically checks DNS CNAME records against 20+ vulnerable services (GitHub Pages, AWS S3, Heroku) and alerts you instantly.
 - **HTTP Status Probing**: Concurrently probes live subdomains for HTTP/HTTPS status codes (e.g. 200, 403, 404) and extracts page `<title>` tags.
 - **Wayback URLs Fetching**: Deep dive into a target's history by extracting thousands of hidden historical endpoints from the Wayback Machine.
@@ -33,10 +38,8 @@ It seamlessly integrates **24 highly reliable, completely FREE APIs** to discove
 - **Silent Mode**: Pipe results into other tools easily using `-silent`.
 - **JSON Output**: Save or print results in valid JSON format using `-json`.
 - **Multi-Domain Scanning**: Scan hundreds of domains at once using a text file with `-dL`.
-- **Live Host Verification**: Optionally resolve DNS to verify which subdomains are actively alive.
 - **Smart Retries**: Built-in timeout and retry logic bypasses temporary rate-limits.
 - **Auto-Update**: Keep the tool updated natively using `-update`.
-- **Zero Configuration out of the box**: No API keys required for the 24 built-in sources. Just plug and play!
 
 ## 🛠️ Installation Guide (Kali Linux / Parrot OS)
 
@@ -160,7 +163,37 @@ Extract historical hidden endpoints and sensitive files from the Wayback Machine
 twhunt -d target.com -urls -o urls.txt
 ```
 
-**14. Auto-Update Tool**
+**14. JS Secrets Finder 🕵️‍♂️**
+Actively parse `.js` files on discovered subdomains to find API Keys and leaked tokens.
+```bash
+twhunt -d target.com -js
+```
+
+**15. Tech Stack Detection ⚙️**
+Analyze headers and cookies to instantly identify the technologies running on the target.
+```bash
+twhunt -d target.com -tech
+```
+
+**16. Vulnerability Prober 💣**
+Automatically check live subdomains for low-hanging bugs (e.g. `.env`, `.git`).
+```bash
+twhunt -d target.com -vuln
+```
+
+**17. Subdomain Alteration / Permutation 🧬**
+Mutate valid subdomains to find hidden ones (e.g. changes `dev.target.com` to `api-dev.target.com`).
+```bash
+twhunt -d target.com -alt
+```
+
+**18. Continuous Monitoring & Discord Alerts 🤖**
+Run TWHunt periodically. It will save the state and alert you via Discord webhook if a brand new subdomain is deployed!
+```bash
+twhunt -d target.com -notify "https://discord.com/api/webhooks/your_webhook_here"
+```
+
+**19. Auto-Update Tool**
 Easily fetch and install the latest version from GitHub automatically.
 ```bash
 twhunt -update
