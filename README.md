@@ -1,15 +1,22 @@
 <div align="center">
   <img src="author.png" width="150" style="border-radius:50%; border: 3px solid #38b2ac;" alt="MD TALHA HUSSAIN TAWHID">
-  <h1>TWHunt 🚀</h1>
+  <h1>TWHunt - Advanced Subdomain Enumeration & OSINT Reconnaissance Tool 🚀</h1>
   <p><strong>Developed by MD TALHA HUSSAIN TAWHID</strong></p>
   <p>📧 tawhidh2005@gmail.com | 📞 +8801711729858 | 🌐 <a href="https://github.com/tawhid2005">GitHub</a></p>
+  <br>
+  <p>
+    <a href="https://github.com/tawhid2005/TWHunt/releases"><img src="https://img.shields.io/github/v/release/tawhid2005/TWHunt?color=38b2ac&label=Version&style=for-the-badge" alt="Version"></a>
+    <a href="https://github.com/tawhid2005/TWHunt/stargazers"><img src="https://img.shields.io/github/stars/tawhid2005/TWHunt?color=gold&label=Stars&style=for-the-badge" alt="Stars"></a>
+    <a href="https://github.com/tawhid2005/TWHunt/network/members"><img src="https://img.shields.io/github/forks/tawhid2005/TWHunt?color=blue&label=Forks&style=for-the-badge" alt="Forks"></a>
+  </p>
 </div>
 
 ---
 
-**TWHunt** is an advanced, blazingly fast, and modular passive subdomain enumeration tool written in Go. It integrates **24 highly reliable, completely FREE APIs** without requiring any API keys. 
+## 🔎 What is TWHunt?
+**TWHunt** is an advanced, blazingly fast, and modular **passive and active subdomain enumeration tool** written in Go (Golang). Designed specifically for **Bug Bounty Hunters, Penetration Testers, and Cybersecurity Professionals**, TWHunt acts as a complete **OSINT (Open Source Intelligence) and Reconnaissance Framework**.
 
-Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains in just a few seconds and provides a beautiful, colorful, and animated terminal output.
+It seamlessly integrates **24 highly reliable, completely FREE APIs** to discover thousands of subdomains in seconds, without requiring any API keys out of the box. Beyond basic enumeration, TWHunt features **Subdomain Takeover Detection, TCP Port Scanning, HTTP Probing, and Wayback Machine URL Fetching**, making it the ultimate hacking tool for your reconnaissance pipeline.
 
 ## Features ✨
 
