@@ -7,7 +7,7 @@ import (
 )
 
 // GenerateHTMLReport creates a responsive HTML dashboard for the results
-func GenerateHTMLReport(filename string, subdomains []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]ProbeResult, waybackUrls []string, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, silent bool) {
+func GenerateHTMLReport(filename string, subdomains []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]ProbeResult, waybackUrls []string, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, silent bool) {
 	if !silent {
 		fmt.Printf(" %s[*] GENERATING HTML REPORT...%s\n", Gold, EndC)
 	}
@@ -144,6 +144,15 @@ func GenerateHTMLReport(filename string, subdomains []string, portResults map[st
 				critHtml += `<li>` + s + `</li>`
 			}
 			critHtml += `</ul>`
+		}
+		if c, ok := corsResults[sub]; ok {
+			critHtml += `<span class="badge badge-red">CORS: ` + c + `</span><br>`
+		}
+		if w, ok := wafResults[sub]; ok {
+			critHtml += `<span class="badge badge-yellow">WAF: ` + w + `</span><br>`
+		}
+		if p, ok := paramResults[sub]; ok {
+			critHtml += `<span class="badge badge-blue">PARAMS: ` + p + `</span><br>`
 		}
 		
 		if critHtml == "" {

@@ -58,6 +58,13 @@ func main() {
 		fmt.Printf("   %s-vuln%s      : Probe for low-hanging bugs (e.g. /.env, /.git/config)\n", core.Coral, core.EndC)
 		fmt.Printf("   %s-notify%s    : Discord webhook URL to alert on new subdomains found\n", core.Coral, core.EndC)
 		
+		fmt.Printf("\n %s[UNRIVALED OFFENSIVE FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-buckets%s   : Enumerate and find Open Cloud Buckets (AWS, GCP, Azure)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-cors%s      : Check for CORS Misconfigurations\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-waf%s       : Detect Web Application Firewalls (Cloudflare, Akamai, etc.)\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-axfr%s      : Check for DNS Zone Transfer vulnerabilities\n", core.Coral, core.EndC)
+		fmt.Printf("   %s-params%s    : Fuzz for hidden sensitive parameters (e.g. ?admin=1)\n", core.Coral, core.EndC)
+		
 		fmt.Printf("\n %s[OUTPUT FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-o%s         : Output file to save results (e.g. results.txt)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-json%s      : JSON output format (prints subdomains as a JSON array)\n", core.Mint, core.EndC)
@@ -93,6 +100,12 @@ func main() {
 	techPtr := flag.Bool("tech", false, "DETECT TECH STACK")
 	vulnPtr := flag.Bool("vuln", false, "PROBE VULNERABILITIES")
 	notifyPtr := flag.String("notify", "", "DISCORD WEBHOOK URL")
+	
+	bucketsPtr := flag.Bool("buckets", false, "ENUMERATE CLOUD BUCKETS")
+	corsPtr := flag.Bool("cors", false, "CHECK CORS MISCONFIGURATIONS")
+	wafPtr := flag.Bool("waf", false, "DETECT WAF")
+	axfrPtr := flag.Bool("axfr", false, "CHECK DNS ZONE TRANSFER")
+	paramsPtr := flag.Bool("params", false, "FUZZ HIDDEN PARAMETERS")
 	
 	flag.Parse()
 
@@ -217,7 +230,7 @@ func main() {
 		subdomains = uniqueSubdomains
 
 		// Verify Live Status or Wildcard Filter
-		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr || *jsPtr || *techPtr || *vulnPtr {
+		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr || *jsPtr || *techPtr || *vulnPtr || *corsPtr || *wafPtr || *paramsPtr {
 			if !*silentPtr {
 				fmt.Printf(" %s[*] VERIFYING LIVE STATUS & FILTERING...%s\n", core.Gold, core.EndC)
 			}
@@ -239,6 +252,16 @@ func main() {
 
 		// State comparison and Discord Notify
 		core.CompareAndNotify(target, subdomains, *notifyPtr, *silentPtr)
+
+		// AXFR Check (Per Domain)
+		if *axfrPtr {
+			core.CheckAXFR(target, *silentPtr)
+		}
+		
+		// Bucket Enumeration (Per Domain)
+		if *bucketsPtr {
+			core.EnumerateBuckets(target, *silentPtr)
+		}
 
 		allDiscoveredSubdomains = append(allDiscoveredSubdomains, subdomains...)
 	}
@@ -283,6 +306,24 @@ func main() {
 	if *vulnPtr && len(finalSubdomains) > 0 {
 		vulnResults = core.ProbeVulns(finalSubdomains, *silentPtr)
 	}
+	
+	// CORS Checker
+	var corsResults map[string]string
+	if *corsPtr && len(finalSubdomains) > 0 {
+		corsResults = core.CheckCORS(finalSubdomains, *silentPtr)
+	}
+
+	// WAF Detector
+	var wafResults map[string]string
+	if *wafPtr && len(finalSubdomains) > 0 {
+		wafResults = core.DetectWAF(finalSubdomains, *silentPtr)
+	}
+	
+	// Hidden Parameter Fuzzer
+	var paramResults map[string]string
+	if *paramsPtr && len(finalSubdomains) > 0 {
+		paramResults = core.FuzzHiddenParams(finalSubdomains, *silentPtr)
+	}
 
 	// Port Scanning
 	var portResults map[string][]string
@@ -296,7 +337,7 @@ func main() {
 		if *outputPtr != "" && strings.HasSuffix(*outputPtr, ".html") {
 			htmlName = *outputPtr
 		}
-		core.GenerateHTMLReport(htmlName, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, jsResults, techResults, vulnResults, *silentPtr)
+		core.GenerateHTMLReport(htmlName, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, *silentPtr)
 	}
 
 	// Console Output
@@ -309,6 +350,9 @@ func main() {
 			JSSecrets  map[string][]string          `json:"js_secrets,omitempty"`
 			TechStack  map[string][]string          `json:"tech_stack,omitempty"`
 			Vulns      map[string][]string          `json:"vulns,omitempty"`
+			CORS       map[string]string            `json:"cors,omitempty"`
+			WAF        map[string]string            `json:"waf,omitempty"`
+			Params     map[string]string            `json:"hidden_params,omitempty"`
 			Wayback    []string                     `json:"wayback_urls,omitempty"`
 		}
 		outData := OutputData{
@@ -319,6 +363,9 @@ func main() {
 			JSSecrets:  jsResults,
 			TechStack:  techResults,
 			Vulns:      vulnResults,
+			CORS:       corsResults,
+			WAF:        wafResults,
+			Params:     paramResults,
 			Wayback:    allWaybackURLs,
 		}
 		jsonData, _ := json.MarshalIndent(outData, "", "  ")
@@ -363,6 +410,21 @@ func main() {
 			if vulns, ok := vulnResults[sub]; ok && len(vulns) > 0 {
 				line += fmt.Sprintf("\n    %s↳ [!!! VULNERABILITY EXPOSED !!!] %s%s", core.Coral, strings.Join(vulns, ", "), core.EndC)
 			}
+			
+			// Append CORS
+			if cors, ok := corsResults[sub]; ok {
+				line += fmt.Sprintf("\n    %s↳ [!!! CORS MISCONFIG !!!] %s%s", core.Coral, cors, core.EndC)
+			}
+			
+			// Append WAF
+			if waf, ok := wafResults[sub]; ok {
+				line += fmt.Sprintf("\n    %s↳ [WAF DETECTED] %s%s", core.Gold, waf, core.EndC)
+			}
+			
+			// Append Params
+			if params, ok := paramResults[sub]; ok {
+				line += fmt.Sprintf("\n    %s↳ [HIDDEN PARAMS] %s%s", core.Sky, params, core.EndC)
+			}
 
 			fmt.Println(line)
 		}
@@ -385,7 +447,7 @@ func main() {
 
 	// Text Save Logic
 	if *outputPtr != "" && len(finalSubdomains) > 0 && !*htmlPtr {
-		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, allWaybackURLs, *jsonPtr, *silentPtr)
+		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, allWaybackURLs, *jsonPtr, *silentPtr)
 	} else if len(finalSubdomains) > 0 && !*silentPtr && !*jsonPtr && !*htmlPtr {
 		fmt.Printf("\n %s[?] Do you want to save the results to a file? (y/n): %s", core.Gold, core.EndC)
 		var choice string
@@ -399,13 +461,13 @@ func main() {
 			filename = strings.TrimSpace(filename)
 			
 			if filename != "" {
-				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, allWaybackURLs, false, *silentPtr)
+				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, jsResults, techResults, vulnResults, corsResults, wafResults, paramResults, allWaybackURLs, false, *silentPtr)
 			}
 		}
 	}
 }
 
-func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, wayback []string, isJson bool, isSilent bool) {
+func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, jsResults map[string][]string, techResults map[string][]string, vulnResults map[string][]string, corsResults map[string]string, wafResults map[string]string, paramResults map[string]string, wayback []string, isJson bool, isSilent bool) {
 	file, err := os.Create(filename)
 	if err != nil {
 		if !isSilent {
@@ -438,6 +500,15 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 		}
 		if v, ok := vulnResults[sub]; ok && len(v) > 0 {
 			line += " [VULNS: " + strings.Join(v, ", ") + "]"
+		}
+		if c, ok := corsResults[sub]; ok {
+			line += " [CORS: " + c + "]"
+		}
+		if w, ok := wafResults[sub]; ok {
+			line += " [WAF: " + w + "]"
+		}
+		if p, ok := paramResults[sub]; ok {
+			line += " [PARAMS: " + p + "]"
 		}
 		file.WriteString(line + "\n")
 	}

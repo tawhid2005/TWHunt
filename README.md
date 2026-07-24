@@ -29,6 +29,11 @@ Designed specifically for **Bug Bounty Hunters, Penetration Testers, and Red Tea
 
 ### 💣 Automated Vulnerability Probing
 - **JavaScript Secrets Finder**: Actively fetches and parses `.js` files across subdomains to find hardcoded **AWS Keys, Stripe Tokens, Google APIs, and GitHub Tokens**.
+- **Cloud Bucket Enumeration**: Automatically generates permutations and checks AWS S3, Google Cloud, and Azure for open, exposed buckets (`-buckets`).
+- **Web Application Firewall (WAF) Detection**: Actively triggers and detects WAFs (Cloudflare, Akamai, Imperva) using XSS payloads (`-waf`).
+- **CORS Misconfiguration Checker**: Actively probes live subdomains for Cross-Origin Resource Sharing vulnerabilities (`-cors`).
+- **Hidden Parameter Fuzzing**: Discovers hidden developer or admin parameters (e.g., `?admin=1`, `?debug=true`) that alter responses (`-params`).
+- **DNS Zone Transfer (AXFR)**: Identifies misconfigured Nameservers that allow DNS zone dumping (`-axfr`).
 - **Subdomain Takeover Detection**: Automatically checks DNS CNAME records against **20+ vulnerable services** (GitHub Pages, AWS S3, Heroku) and alerts you instantly.
 - **Vulnerability Prober**: Automatically probes discovered subdomains for low-hanging bugs (e.g., exposed `/.env`, `/.git/config`, `/phpinfo.php`).
 - **Tech Stack Detection**: Analyzes HTTP headers and cookies to instantly identify underlying technologies (Nginx, React, PHP, ASP.NET).
@@ -170,31 +175,55 @@ Actively parse `.js` files on discovered subdomains to find API Keys and leaked 
 twhunt -d target.com -js
 ```
 
-**15. Tech Stack Detection ⚙️**
+**15. Cloud Bucket Enumeration ☁️**
+Find open AWS S3, Google Cloud, and Azure buckets related to the target.
+```bash
+twhunt -d target.com -buckets
+```
+
+**16. WAF Detection & CORS Misconfigurations 🛡️**
+Actively test subdomains for Web Application Firewalls and Cross-Origin Resource Sharing vulnerabilities.
+```bash
+twhunt -d target.com -waf -cors
+```
+
+**17. Tech Stack Detection ⚙️**
 Analyze headers and cookies to instantly identify the technologies running on the target.
 ```bash
 twhunt -d target.com -tech
 ```
 
-**16. Vulnerability Prober 💣**
+**18. Vulnerability Prober 💣**
 Automatically check live subdomains for low-hanging bugs (e.g. `.env`, `.git`).
 ```bash
 twhunt -d target.com -vuln
 ```
 
-**17. Subdomain Alteration / Permutation 🧬**
+**19. Hidden Parameter Fuzzing 🎛️**
+Fuzz for hidden sensitive parameters (e.g. `?admin=1`).
+```bash
+twhunt -d target.com -params
+```
+
+**20. DNS Zone Transfer (AXFR) 🌍**
+Check if the domain's Name Servers are vulnerable to a full DNS Zone Transfer.
+```bash
+twhunt -d target.com -axfr
+```
+
+**21. Subdomain Alteration / Permutation 🧬**
 Mutate valid subdomains to find hidden ones (e.g. changes `dev.target.com` to `api-dev.target.com`).
 ```bash
 twhunt -d target.com -alt
 ```
 
-**18. Continuous Monitoring & Discord Alerts 🤖**
+**22. Continuous Monitoring & Discord Alerts 🤖**
 Run TWHunt periodically. It will save the state and alert you via Discord webhook if a brand new subdomain is deployed!
 ```bash
 twhunt -d target.com -notify "https://discord.com/api/webhooks/your_webhook_here"
 ```
 
-**19. Auto-Update Tool**
+**23. Auto-Update Tool**
 Easily fetch and install the latest version from GitHub automatically.
 ```bash
 twhunt -update
