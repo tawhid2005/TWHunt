@@ -123,7 +123,7 @@ func main() {
 	flag.Parse()
 
 	if *versionPtr {
-		fmt.Printf(" %s[!] TWHunt Version: %s%s\n", core.Mint, "v3.0.0", core.EndC)
+		fmt.Printf(" %s[!] TWHunt Version: %s%s\n", core.Mint, "v4.0.0", core.EndC)
 		os.Exit(0)
 	}
 
@@ -609,5 +609,6 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 		fmt.Printf(" %s[✓] RESULTS SAVED TO: %s%s\n", core.Mint, filename, core.EndC)
 	}
 }
+
 
 
