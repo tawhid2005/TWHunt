@@ -1,4 +1,11 @@
-# TWHunt 🚀
+<div align="center">
+  <img src="author.png" width="150" style="border-radius:50%; border: 3px solid #38b2ac;" alt="MD TALHA HUSSAIN TAWHID">
+  <h1>TWHunt 🚀</h1>
+  <p><strong>Developed by MD TALHA HUSSAIN TAWHID</strong></p>
+  <p>📧 tawhidh2005@gmail.com | 📞 +8801711729858 | 🌐 <a href="https://github.com/tawhid2005">GitHub</a></p>
+</div>
+
+---
 
 **TWHunt** is an advanced, blazingly fast, and modular passive subdomain enumeration tool written in Go. It integrates **24 highly reliable, completely FREE APIs** without requiring any API keys. 
 

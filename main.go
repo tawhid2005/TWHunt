@@ -29,8 +29,13 @@ func main() {
     |_|   \_/\_/      |_|  |_| \__,_||_| |_|\__|
                                                   `)
 		fmt.Printf("%s   An Advanced & Professional Subdomain Hunter%s\n", core.Lavender, core.EndC)
-		fmt.Printf("%s   Created by: %sMD TALHA HUSSAIN TAWHID%s\n", core.Slate, core.Mint, core.EndC)
-		fmt.Printf("\n%s   [USAGE]%s ./twhunt -d <domain> [-v] [-o output.txt]%s\n\n", core.Gold, core.Silver, core.EndC)
+		fmt.Printf("%s   -------------------------------------------------------%s\n", core.Slate, core.EndC)
+		fmt.Printf("%s   👤 Author  :%s MD TALHA HUSSAIN TAWHID%s\n", core.Sky, core.Mint, core.EndC)
+		fmt.Printf("%s   📧 Email   :%s tawhidh2005@gmail.com%s\n", core.Sky, core.Mint, core.EndC)
+		fmt.Printf("%s   📞 Phone   :%s +8801711729858%s\n", core.Sky, core.Mint, core.EndC)
+		fmt.Printf("%s   🌐 GitHub  :%s https://github.com/tawhid2005%s\n", core.Sky, core.Mint, core.EndC)
+		fmt.Printf("%s   -------------------------------------------------------%s\n", core.Slate, core.EndC)
+		fmt.Printf("\n%s   [USAGE]%s twhunt -d <domain> [-v] [-o output.txt]%s\n\n", core.Gold, core.Silver, core.EndC)
 		os.Exit(1)
 	}
 
