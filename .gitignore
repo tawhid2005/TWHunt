@@ -19,4 +19,5 @@ go.work
 
 # Ignore custom built binaries
 TWHunt
-TWHunt_linux_amd64
+
+
