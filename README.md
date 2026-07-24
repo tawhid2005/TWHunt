@@ -246,3 +246,4 @@ Found a new API? Pull requests are always welcome! Let's build the best Subdomai
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Happy Hunting! 🐞
+
