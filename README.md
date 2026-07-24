@@ -1,6 +1,6 @@
 <div align="center">
   <img src="author.png" width="150" style="border-radius:50%; border: 3px solid #38b2ac;" alt="MD TALHA HUSSAIN TAWHID">
-  <h1>TWHunt - Advanced Subdomain Enumeration & OSINT Reconnaissance Tool 🚀</h1>
+  <h1>TWHunt - The Ultimate Reconnaissance & Bug Bounty Framework 🚀</h1>
   <p><strong>Developed by MD TALHA HUSSAIN TAWHID</strong></p>
   <p>📧 tawhidh2005@gmail.com | 📞 +8801711729858 | 🌐 <a href="https://github.com/tawhid2005">GitHub</a></p>
   <br>
@@ -8,37 +8,38 @@
     <a href="https://github.com/tawhid2005/TWHunt/releases"><img src="https://img.shields.io/github/v/tag/tawhid2005/TWHunt?color=38b2ac&label=Version&style=for-the-badge" alt="Version"></a>
     <a href="https://github.com/tawhid2005/TWHunt/stargazers"><img src="https://img.shields.io/github/stars/tawhid2005/TWHunt?color=gold&label=Stars&style=for-the-badge" alt="Stars"></a>
     <a href="https://github.com/tawhid2005/TWHunt/network/members"><img src="https://img.shields.io/github/forks/tawhid2005/TWHunt?color=blue&label=Forks&style=for-the-badge" alt="Forks"></a>
+    <img src="https://img.shields.io/badge/Language-Go-00ADD8?style=for-the-badge&logo=go" alt="Go">
   </p>
 </div>
 
 ---
 
 ## 🔎 What is TWHunt?
-**TWHunt** is an advanced, blazingly fast, and modular **passive and active subdomain enumeration tool** written in Go (Golang). Designed specifically for **Bug Bounty Hunters, Penetration Testers, and Cybersecurity Professionals**, TWHunt acts as a complete **OSINT (Open Source Intelligence) and Reconnaissance Framework**.
+**TWHunt** is a blazingly fast, highly concurrent **Subdomain Enumeration, OSINT (Open Source Intelligence), and Vulnerability Reconnaissance Framework** built in Go (Golang). 
 
-It seamlessly integrates **24 highly reliable, completely FREE APIs** to discover thousands of subdomains in seconds, without requiring any API keys out of the box. Beyond basic enumeration, TWHunt features **Subdomain Takeover Detection, TCP Port Scanning, HTTP Probing, and Wayback Machine URL Fetching**, making it the ultimate hacking tool for your reconnaissance pipeline.
+Designed specifically for **Bug Bounty Hunters, Penetration Testers, and Red Teamers**, TWHunt completely automates your recon pipeline. It seamlessly integrates **24 Free API sources** to discover subdomains, and immediately chains them into active scans—finding **JavaScript Secrets, Subdomain Takeovers, Exposed Vulnerabilities, and Wayback Machine Endpoints** in seconds.
 
-## Features ✨
+## 🔥 God-Tier Features
 
-- **API Key Configuration (`config.json`)**: Expand your OSINT capabilities by seamlessly adding API keys for premium sources like Shodan and SecurityTrails.
-- **Active Brute-Forcing**: Use custom wordlists to actively hunt down hidden subdomains using a highly concurrent DNS resolver engine.
-- **JavaScript Secrets Finder**: Actively fetches and parses `.js` files across subdomains to find hardcoded AWS Keys, Stripe Tokens, and API credentials.
-- **Tech Stack Detection**: Analyzes HTTP headers and cookies to instantly identify technologies (Nginx, React, PHP, ASP.NET).
+### 🌍 OSINT & Subdomain Discovery
+- **24 Built-in Free Sources**: Uses Regex & JSON scraping engines (crt.sh, HackerTarget, URLScan, RapidDNS, ShodanCT, ThreatCrowd, etc.) without requiring any API keys!
+- **Active Brute-Forcing**: Use custom wordlists and concurrent DNS resolvers to actively hunt down hidden subdomains.
+- **Subdomain Permutation / Alteration**: Actively generates and resolves mutations (e.g., `api-dev`, `dev-staging`) to uncover unlisted endpoints.
+- **Wildcard DNS Filtering**: Intelligently detect and filter out fake catch-all wildcard DNS responses to keep your results clean.
+
+### 💣 Automated Vulnerability Probing
+- **JavaScript Secrets Finder**: Actively fetches and parses `.js` files across subdomains to find hardcoded **AWS Keys, Stripe Tokens, Google APIs, and GitHub Tokens**.
+- **Subdomain Takeover Detection**: Automatically checks DNS CNAME records against **20+ vulnerable services** (GitHub Pages, AWS S3, Heroku) and alerts you instantly.
 - **Vulnerability Prober**: Automatically probes discovered subdomains for low-hanging bugs (e.g., exposed `/.env`, `/.git/config`, `/phpinfo.php`).
-- **Discord Notification System**: Saves scan states and alerts you on Discord via Webhooks the second a new subdomain is deployed.
-- **Subdomain Permutation (Alteration)**: Generates and resolves mutations of discovered subdomains (e.g., `api-dev`, `dev-staging`) to uncover hidden endpoints.
-- **Subdomain Takeover Detection**: Automatically checks DNS CNAME records against 20+ vulnerable services (GitHub Pages, AWS S3, Heroku) and alerts you instantly.
+- **Tech Stack Detection**: Analyzes HTTP headers and cookies to instantly identify underlying technologies (Nginx, React, PHP, ASP.NET).
 - **HTTP Status Probing**: Concurrently probes live subdomains for HTTP/HTTPS status codes (e.g. 200, 403, 404) and extracts page `<title>` tags.
-- **Wayback URLs Fetching**: Deep dive into a target's history by extracting thousands of hidden historical endpoints from the Wayback Machine.
 - **Fast TCP Port Scanning**: Automatically probe live subdomains for open web ports (`80, 443, 8080`) at lightning speeds.
-- **Beautiful HTML Reports**: Generate a stunning, responsive HTML dashboard to visualize your findings.
-- **Wildcard DNS Filtering**: Intelligently detect and filter out fake catch-all wildcard DNS responses.
-- **24 Built-in Free Sources**: Uses Regex & JSON scraping engines to fetch data from crt.sh, HackerTarget, URLScan, RapidDNS, ShodanCT, ThreatCrowd, and many more!
-- **Extremely Fast**: Uses Go routines (`goroutines`) and channels for concurrent fetching.
-- **Silent Mode**: Pipe results into other tools easily using `-silent`.
-- **JSON Output**: Save or print results in valid JSON format using `-json`.
-- **Multi-Domain Scanning**: Scan hundreds of domains at once using a text file with `-dL`.
-- **Smart Retries**: Built-in timeout and retry logic bypasses temporary rate-limits.
+
+### 📊 Professional Recon Pipeline
+- **Wayback URLs Fetching**: Deep dive into a target's history by extracting thousands of hidden historical endpoints from the Wayback Machine.
+- **Discord Notification System**: Run on a VPS. It saves scan states and alerts you on Discord via Webhooks the second a **brand new subdomain** is deployed.
+- **Beautiful HTML Reports**: Generate a stunning, responsive HTML dashboard to visually analyze your findings.
+- **JSON Output & Silent Mode**: Perfect for chaining with other tools like `httpx` or `nuclei`.
 - **Auto-Update**: Keep the tool updated natively using `-update`.
 
 ## 🛠️ Installation Guide (Kali Linux / Parrot OS)
