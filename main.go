@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	// কাস্টম হেল্প মেনু
+	// Custom help menu
 	flag.Usage = func() {
 		fmt.Printf("%s%s\n", core.Sky, core.Bold)
 		fmt.Println(`
@@ -39,19 +39,29 @@ func main() {
 		fmt.Printf(" %s[USAGE]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   twhunt -d <domain.com> [flags]\n\n")
 
-		fmt.Printf(" %s[FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf(" %s[BASIC FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-d%s      : Target domain (e.g. hackerone.com)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-dL%s     : Target domains list file (e.g. domains.txt)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-v%s      : Verify live status (resolves DNS to find alive subdomains)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-o%s      : Output file to save results (e.g. subdomains.txt)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-silent%s : Silent mode (no banners/logs, pipes nicely into httpx)\n", core.Mint, core.EndC)
+		
+		fmt.Printf("\n %s[ADVANCED FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-nw%s     : Enable wildcard DNS filtering (removes false positives)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-w%s      : Active brute-forcing wordlist file (e.g. subdomains.txt)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-ports%s  : TCP Ports to scan on live subdomains (e.g. 80,443,8080)\n", core.Mint, core.EndC)
+		
+		fmt.Printf("\n %s[OUTPUT FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-o%s      : Output file to save results (e.g. results.txt)\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-json%s   : JSON output format (prints subdomains as a JSON array)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-html%s   : Generate a beautiful HTML report dashboard\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-silent%s : Silent mode (no banners/logs, pipes nicely into httpx)\n", core.Mint, core.EndC)
+		
+		fmt.Printf("\n %s[MISC FLAGS]%s\n", core.Gold, core.EndC)
 		fmt.Printf("   %s-update%s : Auto-updates TWHunt to the latest version from GitHub\n", core.Mint, core.EndC)
 		fmt.Printf("   %s-h%s      : Show this help menu\n\n", core.Mint, core.EndC)
 
 		fmt.Printf(" %s[EXAMPLES]%s\n", core.Gold, core.EndC)
-		fmt.Printf("   %stwhunt -d example.com%s\n", core.Sky, core.EndC)
-		fmt.Printf("   %stwhunt -d example.com -v -o live.txt%s\n", core.Sky, core.EndC)
+		fmt.Printf("   %stwhunt -d example.com -nw -v%s\n", core.Sky, core.EndC)
+		fmt.Printf("   %stwhunt -d example.com -w wordlist.txt -ports 80,443 -html%s\n", core.Sky, core.EndC)
 		fmt.Printf("   %stwhunt -dL domains.txt -silent | httpx%s\n\n", core.Sky, core.EndC)
 	}
 
@@ -62,6 +72,12 @@ func main() {
 	jsonPtr := flag.Bool("json", false, "JSON OUTPUT")
 	listPtr := flag.String("dL", "", "TARGET DOMAINS LIST FILE")
 	updatePtr := flag.Bool("update", false, "UPDATE TWHUNT")
+	
+	nwPtr := flag.Bool("nw", false, "FILTER WILDCARD DNS")
+	wordlistPtr := flag.String("w", "", "WORDLIST FOR BRUTEFORCING")
+	portsPtr := flag.String("ports", "", "PORTS TO SCAN (e.g. 80,443)")
+	htmlPtr := flag.Bool("html", false, "GENERATE HTML REPORT")
+	
 	flag.Parse()
 
 	if *updatePtr {
@@ -70,8 +86,14 @@ func main() {
 
 	if *domainPtr == "" && *listPtr == "" {
 		if !*silentPtr {
-			fmt.Printf("%s%s\n", core.Sky, core.Bold)
-			fmt.Println(`
+			flag.Usage()
+		}
+		os.Exit(1)
+	}
+
+	if !*silentPtr && !*jsonPtr {
+		fmt.Printf("%s%s\n", core.Sky, core.Bold)
+		fmt.Println(`
   _______          __  _    _             _   
  |__   __|        / / | |  | |           | |  
     | | __      __ /  | |__| | _   _  _ __ | |_ 
@@ -79,17 +101,14 @@ func main() {
     | |  \ V  V /     | |  | || |_| || | | | |_ 
     |_|   \_/\_/      |_|  |_| \__,_||_| |_|\__|
                                                   `)
-			fmt.Printf("%s   An Advanced & Professional Subdomain Hunter%s\n", core.Lavender, core.EndC)
-			fmt.Printf("%s   -------------------------------------------------------%s\n", core.Slate, core.EndC)
-			fmt.Printf("%s   👤 Author  :%s MD TALHA HUSSAIN TAWHID%s\n", core.Sky, core.Mint, core.EndC)
-			fmt.Printf("%s   📧 Email   :%s tawhidh2005@gmail.com%s\n", core.Sky, core.Mint, core.EndC)
-			fmt.Printf("%s   📞 Phone   :%s +8801711729858%s\n", core.Sky, core.Mint, core.EndC)
-			fmt.Printf("%s   🌐 GitHub  :%s https://github.com/tawhid2005%s\n", core.Sky, core.Mint, core.EndC)
-			fmt.Printf("%s   -------------------------------------------------------%s\n", core.Slate, core.EndC)
-			fmt.Printf("\n%s   [USAGE]%s twhunt -d <domain> [-v] [-o output.txt] [-silent] [-json] [-dL list.txt] [-update]%s\n\n", core.Gold, core.Silver, core.EndC)
-		}
-		os.Exit(1)
+		fmt.Printf("%s   An Advanced & Professional Subdomain Hunter%s\n", core.Lavender, core.EndC)
+		fmt.Printf("%s   -------------------------------------------------------%s\n", core.Slate, core.EndC)
+		fmt.Printf("%s   👤 Author  :%s MD TALHA HUSSAIN TAWHID%s\n", core.Sky, core.Mint, core.EndC)
+		fmt.Printf("%s   -------------------------------------------------------%s\n\n", core.Slate, core.EndC)
 	}
+
+	// Load Config File (creates if missing)
+	core.LoadConfig(*silentPtr)
 
 	var targets []string
 	if *domainPtr != "" {
@@ -141,22 +160,48 @@ func main() {
 	var allDiscoveredSubdomains []string
 
 	for _, target := range targets {
+		var wildcardIPs []string
+		if *nwPtr {
+			wildcardIPs = core.GetWildcardIPs(target, *silentPtr)
+		}
+
 		engine := core.NewEngine(sourceList, *silentPtr)
 		subdomains := engine.Run(target)
 
-		if *verifyPtr && len(subdomains) > 0 {
+		if *wordlistPtr != "" {
+			bruted := core.RunBruteforce(target, *wordlistPtr, 50, *silentPtr)
+			subdomains = append(subdomains, bruted...)
+		}
+
+		// Deduplicate current domain
+		uniqueMap := make(map[string]bool)
+		var uniqueSubdomains []string
+		for _, sub := range subdomains {
+			if !uniqueMap[sub] {
+				uniqueMap[sub] = true
+				uniqueSubdomains = append(uniqueSubdomains, sub)
+			}
+		}
+		subdomains = uniqueSubdomains
+
+		// Verify Live Status or Wildcard Filter
+		if *verifyPtr || *nwPtr || *portsPtr != "" {
 			if !*silentPtr {
-				fmt.Printf(" %s[*] VERIFYING LIVE STATUS FOR %s...%s\n", core.Gold, target, core.EndC)
+				fmt.Printf(" %s[*] VERIFYING LIVE STATUS & FILTERING...%s\n", core.Gold, core.EndC)
 			}
 			var live []string
 			for _, sub := range subdomains {
 				if _, err := net.LookupHost(sub); err == nil {
+					// Check wildcard
+					if *nwPtr && core.IsWildcard(sub, wildcardIPs) {
+						continue // Skip if wildcard fake
+					}
 					live = append(live, sub)
 				}
 			}
 			subdomains = live
 			if !*silentPtr {
-				fmt.Printf(" %s[✓] TOTAL LIVE HOSTS FOUND FOR %s: %d%s\n", core.Mint, target, len(subdomains), core.EndC)
+				fmt.Printf(" %s[✓] TOTAL LIVE/VALID HOSTS FOUND FOR %s: %d%s\n", core.Mint, target, len(subdomains), core.EndC)
 			}
 		}
 
@@ -164,29 +209,53 @@ func main() {
 	}
 
 	// Remove completely global duplicates across all domains
-	uniqueSubdomains := make(map[string]bool)
+	uniqueGlobal := make(map[string]bool)
 	var finalSubdomains []string
 	for _, sub := range allDiscoveredSubdomains {
-		if !uniqueSubdomains[sub] {
-			uniqueSubdomains[sub] = true
+		if !uniqueGlobal[sub] {
+			uniqueGlobal[sub] = true
 			finalSubdomains = append(finalSubdomains, sub)
 		}
 	}
 	sort.Strings(finalSubdomains)
 
+	// Port Scanning
+	var portResults map[string][]string
+	if *portsPtr != "" && len(finalSubdomains) > 0 {
+		portResults = core.ScanPorts(finalSubdomains, *portsPtr, *silentPtr)
+	}
+
+	// Generate HTML Report
+	if *htmlPtr {
+		htmlName := "twhunt_report.html"
+		if *outputPtr != "" && strings.HasSuffix(*outputPtr, ".html") {
+			htmlName = *outputPtr
+		}
+		utils.GenerateHTMLReport(htmlName, finalSubdomains, portResults, *silentPtr)
+	}
+
+	// Console Output
 	if *jsonPtr {
 		jsonData, _ := json.MarshalIndent(finalSubdomains, "", "  ")
 		fmt.Println(string(jsonData))
 	} else if !*silentPtr && len(finalSubdomains) > 0 {
 		fmt.Printf("\n%s%s========================= RESULTS =========================%s\n", core.Sky, core.Bold, core.EndC)
 		for _, sub := range finalSubdomains {
-			fmt.Printf(" %s→%s %s%s%s\n", core.Mint, core.EndC, core.Silver, sub, core.EndC)
+			if ports, ok := portResults[sub]; ok && len(ports) > 0 {
+				fmt.Printf(" %s→%s %s%-35s %s[PORTS: %s]%s\n", core.Mint, core.EndC, core.Silver, sub, core.Coral, strings.Join(ports, ","), core.EndC)
+			} else {
+				fmt.Printf(" %s→%s %s%s%s\n", core.Mint, core.EndC, core.Silver, sub, core.EndC)
+			}
 		}
 		fmt.Printf("%s%s===========================================================%s\n", core.Sky, core.Bold, core.EndC)
-	} else if *silentPtr && len(finalSubdomains) > 0 {
-		// In silent mode without JSON, just print one domain per line
+	} else if *silentPtr && !*htmlPtr && !*jsonPtr {
+		// In silent mode without JSON/HTML, just print one domain per line
 		for _, sub := range finalSubdomains {
-			fmt.Println(sub)
+			if ports, ok := portResults[sub]; ok && len(ports) > 0 {
+				fmt.Printf("%s:%s\n", sub, strings.Join(ports, ","))
+			} else {
+				fmt.Println(sub)
+			}
 		}
 	}
 
@@ -194,10 +263,10 @@ func main() {
 		fmt.Printf("\n %s[!] SCAN COMPLETED. HAPPY HUNTING!%s\n", core.Sky, core.EndC)
 	}
 
-	// সেভ করার লজিক
-	if *outputPtr != "" && len(finalSubdomains) > 0 {
-		saveToFile(*outputPtr, finalSubdomains, *jsonPtr, *silentPtr)
-	} else if len(finalSubdomains) > 0 && !*silentPtr && !*jsonPtr {
+	// Text Save Logic
+	if *outputPtr != "" && len(finalSubdomains) > 0 && !*htmlPtr {
+		saveToFile(*outputPtr, finalSubdomains, portResults, *jsonPtr, *silentPtr)
+	} else if len(finalSubdomains) > 0 && !*silentPtr && !*jsonPtr && !*htmlPtr {
 		fmt.Printf("\n %s[?] Do you want to save the results to a file? (y/n): %s", core.Gold, core.EndC)
 		var choice string
 		fmt.Scanln(&choice)
@@ -210,15 +279,13 @@ func main() {
 			filename = strings.TrimSpace(filename)
 			
 			if filename != "" {
-				saveToFile(filename, finalSubdomains, false, *silentPtr)
-			} else {
-				fmt.Printf(" %s[!] No filename provided. Skipping save.%s\n", core.Coral, core.EndC)
+				saveToFile(filename, finalSubdomains, portResults, false, *silentPtr)
 			}
 		}
 	}
 }
 
-func saveToFile(filename string, data []string, isJson bool, isSilent bool) {
+func saveToFile(filename string, data []string, portResults map[string][]string, isJson bool, isSilent bool) {
 	file, err := os.Create(filename)
 	if err != nil {
 		if !isSilent {
@@ -229,11 +296,16 @@ func saveToFile(filename string, data []string, isJson bool, isSilent bool) {
 	defer file.Close()
 	
 	if isJson {
+		// For JSON we could construct a structured object with ports, but keeping it simple for now
 		jsonData, _ := json.MarshalIndent(data, "", "  ")
 		file.Write(jsonData)
 	} else {
 		for _, sub := range data {
-			file.WriteString(sub + "\n")
+			if ports, ok := portResults[sub]; ok && len(ports) > 0 {
+				file.WriteString(sub + " [PORTS: " + strings.Join(ports, ",") + "]\n")
+			} else {
+				file.WriteString(sub + "\n")
+			}
 		}
 	}
 	

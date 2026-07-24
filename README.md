@@ -13,6 +13,11 @@ Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains
 
 ## Features ✨
 
+- **API Key Configuration (`config.json`)**: Expand your OSINT capabilities by seamlessly adding API keys for premium sources like Shodan and SecurityTrails.
+- **Active Brute-Forcing**: Use custom wordlists to actively hunt down hidden subdomains using a highly concurrent DNS resolver engine.
+- **Fast TCP Port Scanning**: Automatically probe live subdomains for open web ports (`80, 443, 8080`) at lightning speeds.
+- **Beautiful HTML Reports**: Generate a stunning, responsive HTML dashboard to visualize your findings.
+- **Wildcard DNS Filtering**: Intelligently detect and filter out fake catch-all wildcard DNS responses.
 - **24 Built-in Free Sources**: Uses Regex & JSON scraping engines to fetch data from crt.sh, HackerTarget, URLScan, RapidDNS, ShodanCT, ThreatCrowd, and many more!
 - **Extremely Fast**: Uses Go routines (`goroutines`) and channels for concurrent fetching.
 - **Silent Mode**: Pipe results into other tools easily using `-silent`.
@@ -21,7 +26,7 @@ Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains
 - **Live Host Verification**: Optionally resolve DNS to verify which subdomains are actively alive.
 - **Smart Retries**: Built-in timeout and retry logic bypasses temporary rate-limits.
 - **Auto-Update**: Keep the tool updated natively using `-update`.
-- **Zero Configuration**: No API keys required. Just plug and play!
+- **Zero Configuration out of the box**: No API keys required for the 24 built-in sources. Just plug and play!
 
 ## 🛠️ Installation Guide (Kali Linux / Parrot OS)
 
@@ -96,14 +101,40 @@ Professional hackers love pipelining tools. The `-silent` flag removes all banne
 twhunt -d target.com -silent | httpx -title -status-code
 ```
 
-### 6. JSON Output format
-For integration into automated scripts or platforms, output your results in JSON.
+### 6. JSON Output
+Output results in a structured JSON array.
 ```bash
 twhunt -d target.com -json
+twhunt -d target.com -json -o results.json
 ```
 
-### 7. Auto-Update Feature
-Never fall behind on updates! TWHunt can update itself directly from GitHub.
+**7. Active Subdomain Brute-Forcing**
+Hunt hidden subdomains using your custom wordlist.
+```bash
+twhunt -d target.com -w wordlist.txt
+```
+
+**8. TCP Port Scanning**
+Scan for open web ports on discovered live subdomains.
+```bash
+twhunt -d target.com -ports 80,443,8080,8443
+```
+
+**9. HTML Dashboard Report**
+Generate an interactive, beautifully designed HTML report.
+```bash
+twhunt -d target.com -ports 80,443 -html
+twhunt -d target.com -ports 80,443 -html -o my_report.html
+```
+
+**10. Wildcard DNS Filtering**
+Prevent catch-all DNS records from flooding your results.
+```bash
+twhunt -d target.com -nw
+```
+
+**11. Auto-Update Tool**
+Easily fetch and install the latest version from GitHub automatically.
 ```bash
 twhunt -update
 ```
