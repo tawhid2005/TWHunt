@@ -1,6 +1,6 @@
-# Contributing to Subfnder
+# Contributing to TWHunt
 
-First off, thank you for considering contributing to Subfnder! It's people like you that make Subfnder such a great tool for the community.
+First off, thank you for considering contributing to TWHunt! It's people like you that make TWHunt such a great tool for the community.
 
 ## How Can I Contribute?
 
@@ -16,7 +16,7 @@ We are always looking for new ideas! If you have a suggestion:
 * Explain why this enhancement would be useful to most users.
 
 ### Adding New Free APIs
-Subfnder aims to integrate completely free APIs that don't require keys. To add a new source:
+TWHunt aims to integrate completely free APIs that don't require keys. To add a new source:
 1. Fork the repository.
 2. Create a new file in `sources/` implementing the `Source` interface (check `core/source.go`).
 3. Add the new source to the `sourceList` array in `main.go`.

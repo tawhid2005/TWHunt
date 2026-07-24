@@ -18,5 +18,5 @@
 go.work
 
 # Ignore custom built binaries
-subfnder
-subfnder_linux_amd64
+TWHunt
+TWHunt_linux_amd64

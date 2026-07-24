@@ -1,6 +1,6 @@
-# Subfnder 🚀
+# TWHunt 🚀
 
-Subfnder is a blazingly fast, concurrent, and modular passive subdomain enumeration tool written in Go. It integrates **24 highly reliable, completely FREE APIs** without requiring any API keys. 
+TWHunt is a blazingly fast, concurrent, and modular passive subdomain enumeration tool written in Go. It integrates **24 highly reliable, completely FREE APIs** without requiring any API keys. 
 
 Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains in just a few seconds and provides a beautiful, animated terminal output.
 
@@ -21,16 +21,16 @@ Ensure you have [Go](https://golang.org/doc/install) installed on your system.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/subfnder.git
+git clone https://github.com/yourusername/TWHunt.git
 
 # Navigate to the directory
-cd subfnder
+cd TWHunt
 
 # Build the binary
-go build -o subfnder main.go
+go build -o TWHunt main.go
 
 # (Optional) Move to bin path for global usage (Linux/macOS)
-sudo mv subfnder /usr/local/bin/
+sudo mv TWHunt /usr/local/bin/
 ```
 
 ## Usage 🎯
@@ -39,13 +39,13 @@ It's incredibly simple to use!
 
 **1. Basic Subdomain Enumeration**
 ```bash
-./subfnder -d target.com
+./TWHunt -d target.com
 ```
 
 **2. Enumerate & Verify Live Hosts**
-By passing the `-v` flag, Subfnder will perform DNS resolution to find out which subdomains are actively resolving.
+By passing the `-v` flag, TWHunt will perform DNS resolution to find out which subdomains are actively resolving.
 ```bash
-./subfnder -d target.com -v
+./TWHunt -d target.com -v
 ```
 
 ## Supported Sources 📡

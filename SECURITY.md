@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Currently, only the latest release of Subfnder receives security updates.
+Currently, only the latest release of TWHunt receives security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -11,7 +11,7 @@ Currently, only the latest release of Subfnder receives security updates.
 
 ## Reporting a Vulnerability
 
-We take the security of Subfnder seriously. If you discover a security vulnerability within Subfnder, please DO NOT open a public issue on GitHub. 
+We take the security of TWHunt seriously. If you discover a security vulnerability within TWHunt, please DO NOT open a public issue on GitHub. 
 
 Instead, please send an e-mail to our security team at tawhidh2005@gmail.com. We will respond to your report within 48 hours.
 
