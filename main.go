@@ -15,6 +15,7 @@ import (
 func main() {
 	domainPtr := flag.String("d", "", "TARGET DOMAIN")
 	verifyPtr := flag.Bool("v", false, "VERIFY LIVE STATUS")
+	outputPtr := flag.String("o", "", "OUTPUT FILE TO SAVE RESULTS")
 	flag.Parse()
 
 	if *domainPtr == "" {
@@ -29,7 +30,7 @@ func main() {
                                                   `)
 		fmt.Printf("%s   An Advanced & Professional Subdomain Hunter%s\n", core.Lavender, core.EndC)
 		fmt.Printf("%s   Created by: %sMD TALHA HUSSAIN TAWHID%s\n", core.Slate, core.Mint, core.EndC)
-		fmt.Printf("\n%s   [USAGE]%s ./twhunt -d <domain> [-v]%s\n\n", core.Gold, core.Silver, core.EndC)
+		fmt.Printf("\n%s   [USAGE]%s ./twhunt -d <domain> [-v] [-o output.txt]%s\n\n", core.Gold, core.Silver, core.EndC)
 		os.Exit(1)
 	}
 
@@ -92,4 +93,19 @@ func main() {
 	}
 
 	fmt.Printf("\n %s[!] SCAN COMPLETED. HAPPY HUNTING!%s\n", core.Sky, core.EndC)
+
+	// সেভ করার লজিক
+	if *outputPtr != "" && len(subdomains) > 0 {
+		file, err := os.Create(*outputPtr)
+		if err != nil {
+			fmt.Printf(" %s[!] ERROR SAVING FILE: %v%s\n", core.Coral, err, core.EndC)
+			return
+		}
+		defer file.Close()
+		
+		for _, sub := range subdomains {
+			file.WriteString(sub + "\n")
+		}
+		fmt.Printf(" %s[✓] RESULTS SAVED TO: %s%s\n", core.Mint, *outputPtr, core.EndC)
+	}
 }

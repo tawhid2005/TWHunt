@@ -10,6 +10,7 @@ Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains
 - **Extremely Fast**: Uses Go routines (`goroutines`) and channels for concurrent fetching.
 - **Zero Configuration**: No API keys required. Just plug and play!
 - **Live Host Verification**: Optionally resolve DNS to verify which subdomains are actively alive.
+- **Save to File**: Save all discovered subdomains to a `.txt` file automatically.
 - **Beautiful UI**: Colorful ASCII banners, live spinner animations, and clean summary tables.
 - **Cross-Platform**: Works natively on Linux (Kali/Parrot), Windows, and macOS.
 
@@ -29,9 +30,6 @@ chmod +x twhunt
 
 # 3. Move it to your local bin directory to use it from anywhere
 sudo mv twhunt /usr/local/bin/
-
-# 4. Run the tool!
-twhunt -d example.com
 ```
 
 ### Method 2: Build from Source (Requires Go)
@@ -52,9 +50,6 @@ chmod +x twhunt
 
 # 5. Move it to your local bin directory
 sudo mv twhunt /usr/local/bin/
-
-# 6. Run the tool!
-twhunt -d example.com
 ```
 
 ## 🎯 Usage
@@ -71,6 +66,13 @@ twhunt -d target.com
 By passing the `-v` flag, TWHunt will also perform DNS resolution to find out which of the discovered subdomains are actively alive and resolving.
 ```bash
 twhunt -d target.com -v
+```
+
+**3. Save Results to a Text File**
+You can use the `-o` flag to save the final discovered subdomains into a `.txt` file for later use.
+```bash
+twhunt -d target.com -o subdomains.txt
+twhunt -d target.com -v -o live_subdomains.txt
 ```
 
 ## 📡 Supported Free Sources
