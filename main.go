@@ -11,7 +11,6 @@ import (
 
 	"twhunt/core"
 	"twhunt/sources"
-	"twhunt/utils"
 )
 
 func main() {
@@ -40,29 +39,27 @@ func main() {
 		fmt.Printf("   twhunt -d <domain.com> [flags]\n\n")
 
 		fmt.Printf(" %s[BASIC FLAGS]%s\n", core.Gold, core.EndC)
-		fmt.Printf("   %s-d%s      : Target domain (e.g. hackerone.com)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-dL%s     : Target domains list file (e.g. domains.txt)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-v%s      : Verify live status (resolves DNS to find alive subdomains)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-d%s         : Target domain (e.g. hackerone.com)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-dL%s        : Target domains list file (e.g. domains.txt)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-v%s         : Verify live status (resolves DNS to find alive subdomains)\n", core.Mint, core.EndC)
 		
-		fmt.Printf("\n %s[ADVANCED FLAGS]%s\n", core.Gold, core.EndC)
-		fmt.Printf("   %s-nw%s     : Enable wildcard DNS filtering (removes false positives)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-w%s      : Active brute-forcing wordlist file (e.g. subdomains.txt)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-ports%s  : TCP Ports to scan on live subdomains (e.g. 80,443,8080)\n", core.Mint, core.EndC)
+		fmt.Printf("\n %s[ADVANCED RECON FLAGS]%s\n", core.Gold, core.EndC)
+		fmt.Printf("   %s-nw%s        : Enable wildcard DNS filtering (removes false positives)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-w%s         : Active brute-forcing wordlist file (e.g. subdomains.txt)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-ports%s     : TCP Ports to scan on live subdomains (e.g. 80,443)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-takeover%s  : Detect vulnerable Subdomain Takeovers (e.g. GitHub, Heroku, S3)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-probe%s     : Probe HTTP/HTTPS status codes and Page Titles\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-urls%s      : Fetch historical endpoints and URLs from Wayback Machine\n", core.Mint, core.EndC)
 		
 		fmt.Printf("\n %s[OUTPUT FLAGS]%s\n", core.Gold, core.EndC)
-		fmt.Printf("   %s-o%s      : Output file to save results (e.g. results.txt)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-json%s   : JSON output format (prints subdomains as a JSON array)\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-html%s   : Generate a beautiful HTML report dashboard\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-silent%s : Silent mode (no banners/logs, pipes nicely into httpx)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-o%s         : Output file to save results (e.g. results.txt)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-json%s      : JSON output format (prints subdomains as a JSON array)\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-html%s      : Generate a beautiful HTML report dashboard\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-silent%s    : Silent mode (no banners/logs, pipes nicely into httpx)\n", core.Mint, core.EndC)
 		
 		fmt.Printf("\n %s[MISC FLAGS]%s\n", core.Gold, core.EndC)
-		fmt.Printf("   %s-update%s : Auto-updates TWHunt to the latest version from GitHub\n", core.Mint, core.EndC)
-		fmt.Printf("   %s-h%s      : Show this help menu\n\n", core.Mint, core.EndC)
-
-		fmt.Printf(" %s[EXAMPLES]%s\n", core.Gold, core.EndC)
-		fmt.Printf("   %stwhunt -d example.com -nw -v%s\n", core.Sky, core.EndC)
-		fmt.Printf("   %stwhunt -d example.com -w wordlist.txt -ports 80,443 -html%s\n", core.Sky, core.EndC)
-		fmt.Printf("   %stwhunt -dL domains.txt -silent | httpx%s\n\n", core.Sky, core.EndC)
+		fmt.Printf("   %s-update%s    : Auto-updates TWHunt to the latest version from GitHub\n", core.Mint, core.EndC)
+		fmt.Printf("   %s-h%s         : Show this help menu\n\n", core.Mint, core.EndC)
 	}
 
 	domainPtr := flag.String("d", "", "TARGET DOMAIN")
@@ -78,10 +75,14 @@ func main() {
 	portsPtr := flag.String("ports", "", "PORTS TO SCAN (e.g. 80,443)")
 	htmlPtr := flag.Bool("html", false, "GENERATE HTML REPORT")
 	
+	takeoverPtr := flag.Bool("takeover", false, "DETECT SUBDOMAIN TAKEOVERS")
+	probePtr := flag.Bool("probe", false, "PROBE HTTP STATUS AND TITLES")
+	urlsPtr := flag.Bool("urls", false, "FETCH WAYBACK MACHINE URLS")
+	
 	flag.Parse()
 
 	if *updatePtr {
-		utils.AutoUpdate()
+		core.AutoUpdate()
 	}
 
 	if *domainPtr == "" && *listPtr == "" {
@@ -158,6 +159,7 @@ func main() {
 	}
 
 	var allDiscoveredSubdomains []string
+	var allWaybackURLs []string
 
 	for _, target := range targets {
 		var wildcardIPs []string
@@ -173,6 +175,11 @@ func main() {
 			subdomains = append(subdomains, bruted...)
 		}
 
+		if *urlsPtr {
+			urls := core.FetchWaybackURLs(target, *silentPtr)
+			allWaybackURLs = append(allWaybackURLs, urls...)
+		}
+
 		// Deduplicate current domain
 		uniqueMap := make(map[string]bool)
 		var uniqueSubdomains []string
@@ -185,7 +192,7 @@ func main() {
 		subdomains = uniqueSubdomains
 
 		// Verify Live Status or Wildcard Filter
-		if *verifyPtr || *nwPtr || *portsPtr != "" {
+		if *verifyPtr || *nwPtr || *portsPtr != "" || *takeoverPtr || *probePtr {
 			if !*silentPtr {
 				fmt.Printf(" %s[*] VERIFYING LIVE STATUS & FILTERING...%s\n", core.Gold, core.EndC)
 			}
@@ -219,6 +226,18 @@ func main() {
 	}
 	sort.Strings(finalSubdomains)
 
+	// Subdomain Takeover
+	var takeoverResults map[string]string
+	if *takeoverPtr && len(finalSubdomains) > 0 {
+		takeoverResults = core.CheckTakeovers(finalSubdomains, *silentPtr)
+	}
+
+	// HTTP Probing
+	var probeResults map[string]core.ProbeResult
+	if *probePtr && len(finalSubdomains) > 0 {
+		probeResults = core.ProbeHTTP(finalSubdomains, *silentPtr)
+	}
+
 	// Port Scanning
 	var portResults map[string][]string
 	if *portsPtr != "" && len(finalSubdomains) > 0 {
@@ -231,31 +250,66 @@ func main() {
 		if *outputPtr != "" && strings.HasSuffix(*outputPtr, ".html") {
 			htmlName = *outputPtr
 		}
-		utils.GenerateHTMLReport(htmlName, finalSubdomains, portResults, *silentPtr)
+		core.GenerateHTMLReport(htmlName, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, *silentPtr)
 	}
 
 	// Console Output
 	if *jsonPtr {
-		jsonData, _ := json.MarshalIndent(finalSubdomains, "", "  ")
+		// Prepare a mega JSON struct
+		type OutputData struct {
+			Subdomains []string                     `json:"subdomains"`
+			Ports      map[string][]string          `json:"ports,omitempty"`
+			Takeovers  map[string]string            `json:"takeovers,omitempty"`
+			Probes     map[string]core.ProbeResult  `json:"probes,omitempty"`
+			Wayback    []string                     `json:"wayback_urls,omitempty"`
+		}
+		outData := OutputData{
+			Subdomains: finalSubdomains,
+			Ports:      portResults,
+			Takeovers:  takeoverResults,
+			Probes:     probeResults,
+			Wayback:    allWaybackURLs,
+		}
+		jsonData, _ := json.MarshalIndent(outData, "", "  ")
 		fmt.Println(string(jsonData))
 	} else if !*silentPtr && len(finalSubdomains) > 0 {
 		fmt.Printf("\n%s%s========================= RESULTS =========================%s\n", core.Sky, core.Bold, core.EndC)
 		for _, sub := range finalSubdomains {
+			
+			// Base line
+			line := fmt.Sprintf(" %s→%s %s%-30s%s ", core.Mint, core.EndC, core.Silver, sub, core.EndC)
+			
+			// Append Port Info
 			if ports, ok := portResults[sub]; ok && len(ports) > 0 {
-				fmt.Printf(" %s→%s %s%-35s %s[PORTS: %s]%s\n", core.Mint, core.EndC, core.Silver, sub, core.Coral, strings.Join(ports, ","), core.EndC)
-			} else {
-				fmt.Printf(" %s→%s %s%s%s\n", core.Mint, core.EndC, core.Silver, sub, core.EndC)
+				line += fmt.Sprintf("%s[Ports: %s]%s ", core.Coral, strings.Join(ports, ","), core.EndC)
 			}
+			
+			// Append Probe Info
+			if probe, ok := probeResults[sub]; ok && probe.StatusCode > 0 {
+				color := core.Mint
+				if probe.StatusCode >= 400 {
+					color = core.Gold
+				}
+				line += fmt.Sprintf("%s[HTTP %d] [Title: %s]%s ", color, probe.StatusCode, probe.Title, core.EndC)
+			}
+			
+			// Append Takeover Info
+			if tk, ok := takeoverResults[sub]; ok {
+				line += fmt.Sprintf("\n    %s↳ [!!! VULNERABLE TO TAKEOVER !!!] %s%s", core.Coral, tk, core.EndC)
+			}
+
+			fmt.Println(line)
 		}
 		fmt.Printf("%s%s===========================================================%s\n", core.Sky, core.Bold, core.EndC)
+
+		if len(allWaybackURLs) > 0 {
+			fmt.Printf("\n%s[*] FOUND %d WAYBACK URLS. (Not printing all to screen to save space, please use -o to save them to file)%s\n", core.Gold, len(allWaybackURLs), core.EndC)
+		}
+
 	} else if *silentPtr && !*htmlPtr && !*jsonPtr {
-		// In silent mode without JSON/HTML, just print one domain per line
+		// Silent Mode Output
 		for _, sub := range finalSubdomains {
-			if ports, ok := portResults[sub]; ok && len(ports) > 0 {
-				fmt.Printf("%s:%s\n", sub, strings.Join(ports, ","))
-			} else {
-				fmt.Println(sub)
-			}
+			fmt.Println(sub)
 		}
 	}
 
@@ -265,7 +319,7 @@ func main() {
 
 	// Text Save Logic
 	if *outputPtr != "" && len(finalSubdomains) > 0 && !*htmlPtr {
-		saveToFile(*outputPtr, finalSubdomains, portResults, *jsonPtr, *silentPtr)
+		saveToFile(*outputPtr, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, *jsonPtr, *silentPtr)
 	} else if len(finalSubdomains) > 0 && !*silentPtr && !*jsonPtr && !*htmlPtr {
 		fmt.Printf("\n %s[?] Do you want to save the results to a file? (y/n): %s", core.Gold, core.EndC)
 		var choice string
@@ -279,13 +333,13 @@ func main() {
 			filename = strings.TrimSpace(filename)
 			
 			if filename != "" {
-				saveToFile(filename, finalSubdomains, portResults, false, *silentPtr)
+				saveToFile(filename, finalSubdomains, portResults, takeoverResults, probeResults, allWaybackURLs, false, *silentPtr)
 			}
 		}
 	}
 }
 
-func saveToFile(filename string, data []string, portResults map[string][]string, isJson bool, isSilent bool) {
+func saveToFile(filename string, data []string, portResults map[string][]string, tkResults map[string]string, probeResults map[string]core.ProbeResult, wayback []string, isJson bool, isSilent bool) {
 	file, err := os.Create(filename)
 	if err != nil {
 		if !isSilent {
@@ -296,16 +350,28 @@ func saveToFile(filename string, data []string, portResults map[string][]string,
 	defer file.Close()
 	
 	if isJson {
-		// For JSON we could construct a structured object with ports, but keeping it simple for now
-		jsonData, _ := json.MarshalIndent(data, "", "  ")
-		file.Write(jsonData)
-	} else {
-		for _, sub := range data {
-			if ports, ok := portResults[sub]; ok && len(ports) > 0 {
-				file.WriteString(sub + " [PORTS: " + strings.Join(ports, ",") + "]\n")
-			} else {
-				file.WriteString(sub + "\n")
-			}
+		// Output handled in main block for full JSON structure
+		return
+	}
+	
+	for _, sub := range data {
+		line := sub
+		if ports, ok := portResults[sub]; ok && len(ports) > 0 {
+			line += " [PORTS: " + strings.Join(ports, ",") + "]"
+		}
+		if pr, ok := probeResults[sub]; ok && pr.StatusCode > 0 {
+			line += fmt.Sprintf(" [HTTP: %d] [Title: %s]", pr.StatusCode, pr.Title)
+		}
+		if tk, ok := tkResults[sub]; ok {
+			line += " [TAKEOVER: " + tk + "]"
+		}
+		file.WriteString(line + "\n")
+	}
+
+	if len(wayback) > 0 {
+		file.WriteString("\n--- WAYBACK URLS ---\n")
+		for _, w := range wayback {
+			file.WriteString(w + "\n")
 		}
 	}
 	

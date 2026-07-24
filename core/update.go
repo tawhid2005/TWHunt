@@ -1,4 +1,4 @@
-package utils
+package core
 
 import (
 	"fmt"
@@ -8,12 +8,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-
-	"twhunt/core"
 )
 
 func AutoUpdate() {
-	fmt.Printf("\n%s[*] Checking for updates...%s\n", core.Sky, core.EndC)
+	fmt.Printf("\n%s[*] Checking for updates...%s\n", Sky, EndC)
 	
 	// Determine the binary name to download based on OS
 	var downloadURL string
@@ -26,13 +24,13 @@ func AutoUpdate() {
 		downloadURL = "https://github.com/tawhid2005/TWHunt/raw/master/twhunt_linux_amd64"
 		backupName = "twhunt.old"
 	} else {
-		fmt.Printf("%s[!] Auto-update is only supported for Windows and Linux.%s\n", core.Coral, core.EndC)
+		fmt.Printf("%s[!] Auto-update is only supported for Windows and Linux.%s\n", Coral, EndC)
 		return
 	}
 
 	execPath, err := os.Executable()
 	if err != nil {
-		fmt.Printf("%s[!] Error determining executable path: %v%s\n", core.Coral, err, core.EndC)
+		fmt.Printf("%s[!] Error determining executable path: %v%s\n", Coral, err, EndC)
 		return
 	}
 
@@ -42,7 +40,7 @@ func AutoUpdate() {
 	
 	err = os.Rename(execPath, backupPath)
 	if err != nil {
-		fmt.Printf("%s[!] Error renaming current executable (permission denied?): %v%s\n", core.Coral, err, core.EndC)
+		fmt.Printf("%s[!] Error renaming current executable (permission denied?): %v%s\n", Coral, err, EndC)
 		return
 	}
 
@@ -50,21 +48,21 @@ func AutoUpdate() {
 	resp, err := http.Get(downloadURL)
 	if err != nil {
 		os.Rename(backupPath, execPath) // Restore
-		fmt.Printf("%s[!] Error downloading update: %v%s\n", core.Coral, err, core.EndC)
+		fmt.Printf("%s[!] Error downloading update: %v%s\n", Coral, err, EndC)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		os.Rename(backupPath, execPath) // Restore
-		fmt.Printf("%s[!] Update not found or error server side.%s\n", core.Coral, core.EndC)
+		fmt.Printf("%s[!] Update not found or error server side.%s\n", Coral, EndC)
 		return
 	}
 
 	out, err := os.OpenFile(execPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 	if err != nil {
 		os.Rename(backupPath, execPath) // Restore
-		fmt.Printf("%s[!] Error creating new executable: %v%s\n", core.Coral, err, core.EndC)
+		fmt.Printf("%s[!] Error creating new executable: %v%s\n", Coral, err, EndC)
 		return
 	}
 	defer out.Close()
@@ -72,7 +70,7 @@ func AutoUpdate() {
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		os.Rename(backupPath, execPath) // Restore
-		fmt.Printf("%s[!] Error writing new executable: %v%s\n", core.Coral, err, core.EndC)
+		fmt.Printf("%s[!] Error writing new executable: %v%s\n", Coral, err, EndC)
 		return
 	}
 
@@ -82,7 +80,7 @@ func AutoUpdate() {
 		cmd.Run()
 	}
 
-	fmt.Printf("%s[✓] TWHunt has been successfully updated to the latest version!%s\n", core.Mint, core.EndC)
-	fmt.Printf("%s[*] Please restart the tool.%s\n", core.Gold, core.EndC)
+	fmt.Printf("%s[✓] TWHunt has been successfully updated to the latest version!%s\n", Mint, EndC)
+	fmt.Printf("%s[*] Please restart the tool.%s\n", Gold, EndC)
 	os.Exit(0)
 }

@@ -15,6 +15,9 @@ Designed for Bug Bounty Hunters and Pentesters, it grabs thousands of subdomains
 
 - **API Key Configuration (`config.json`)**: Expand your OSINT capabilities by seamlessly adding API keys for premium sources like Shodan and SecurityTrails.
 - **Active Brute-Forcing**: Use custom wordlists to actively hunt down hidden subdomains using a highly concurrent DNS resolver engine.
+- **Subdomain Takeover Detection**: Automatically checks DNS CNAME records against 20+ vulnerable services (GitHub Pages, AWS S3, Heroku) and alerts you instantly.
+- **HTTP Status Probing**: Concurrently probes live subdomains for HTTP/HTTPS status codes (e.g. 200, 403, 404) and extracts page `<title>` tags.
+- **Wayback URLs Fetching**: Deep dive into a target's history by extracting thousands of hidden historical endpoints from the Wayback Machine.
 - **Fast TCP Port Scanning**: Automatically probe live subdomains for open web ports (`80, 443, 8080`) at lightning speeds.
 - **Beautiful HTML Reports**: Generate a stunning, responsive HTML dashboard to visualize your findings.
 - **Wildcard DNS Filtering**: Intelligently detect and filter out fake catch-all wildcard DNS responses.
@@ -123,8 +126,7 @@ twhunt -d target.com -ports 80,443,8080,8443
 **9. HTML Dashboard Report**
 Generate an interactive, beautifully designed HTML report.
 ```bash
-twhunt -d target.com -ports 80,443 -html
-twhunt -d target.com -ports 80,443 -html -o my_report.html
+twhunt -d target.com -ports 80,443 -takeover -probe -html
 ```
 
 **10. Wildcard DNS Filtering**
@@ -133,7 +135,25 @@ Prevent catch-all DNS records from flooding your results.
 twhunt -d target.com -nw
 ```
 
-**11. Auto-Update Tool**
+**11. Subdomain Takeover Detection**
+Scan CNAME records to find high-impact Takeover vulnerabilities.
+```bash
+twhunt -d target.com -takeover
+```
+
+**12. HTTP Probing (Status & Titles)**
+Probe live subdomains to find out their HTTP status codes and page titles.
+```bash
+twhunt -d target.com -probe
+```
+
+**13. Wayback Machine URLs Fetching**
+Extract historical hidden endpoints and sensitive files from the Wayback Machine.
+```bash
+twhunt -d target.com -urls -o urls.txt
+```
+
+**14. Auto-Update Tool**
 Easily fetch and install the latest version from GitHub automatically.
 ```bash
 twhunt -update
